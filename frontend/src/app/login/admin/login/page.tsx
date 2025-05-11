@@ -1,18 +1,20 @@
 "use client";
 
 import React, { useState } from 'react';
-// import { useRouter } from 'next/navigation'; // Uncomment when navigation is needed
+import { useRouter } from 'next/navigation'; // Uncomment when navigation is needed
 // import { Button } from '@/components/ui/button'; // Assuming shadcn/ui components
 // import { Input } from '@/components/ui/input';
 // import { Label } from '@/components/ui/label';
 // import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+
 export default function LoginPage() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('admin'); // Default to admin for testing
+  const [password, setPassword] = useState('admin'); // Default to admin for testing
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  // const router = useRouter(); // Uncomment when navigation is needed
+  const router = useRouter();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -20,31 +22,28 @@ export default function LoginPage() {
     setError('');
 
     try {
-      // const response = await fetch('/api/auth/login', { // Replace with actual API endpoint
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({ username, password }),
-      // });
+      const response = await fetch(`${API_URL}/auth/login`, { // Using the API_URL
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
 
-      // if (!response.ok) {
-      //   const data = await response.json();
-      //   throw new Error(data.message || 'Login failed');
-      // }
+      const data = await response.json();
 
-      // const data = await response.json();
-      // // Handle successful login, e.g., store token, redirect
-      // console.log('Login successful:', data);
-      // router.push('/admin/dashboard'); // Example redirect
-      console.log('Simulating login for:', username, password);
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      if (username === "admin" && password === "admin") {
-        console.log("Login successful (simulated)");
-        // router.push('/admin/dashboard'); // Uncomment when dashboard page exists
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      // Handle successful login, e.g., store token, redirect
+      console.log('Login successful:', data);
+      if (data.token) {
+        // In a real app, store the token securely (e.g., localStorage, sessionStorage, or context/state management)
+        localStorage.setItem('authToken', data.token);
+        router.push('/admin/dashboard'); // Redirect to dashboard
       } else {
-        setError("Invalid credentials (simulated)");
+        setError('Login successful, but no token received.');
       }
 
     } catch (err: any) {
@@ -56,45 +55,6 @@ export default function LoginPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      {/* <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">Admin Login</CardTitle>
-          <CardDescription className="text-center">KapexiaCore CRM</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
-              <Input
-                id="username"
-                type="text"
-                placeholder="admin"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="********"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            {error && <p className="text-sm text-red-600">{error}</p>}
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Logging in...' : 'Login'}
-            </Button>
-          </form>
-        </CardContent>
-        <CardFooter className="text-center text-sm">
-          <p>&copy; {new Date().getFullYear()} Kapexia. All rights reserved.</p>
-        </CardFooter>
-      </Card> */}
       <div className="p-8 bg-white shadow-md rounded-lg w-full max-w-md">
         <h1 className="text-2xl font-bold text-center mb-2">Admin Login</h1>
         <p className="text-center text-gray-600 mb-6">KapexiaCore CRM</p>
