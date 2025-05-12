@@ -62,7 +62,7 @@ export default function AdminDashboardPage() {
             <div className="bg-white overflow-hidden shadow rounded-lg">
               <div className="p-5">
                 <h3 className="text-lg font-medium text-gray-900">Configurar IA Global</h3>
-                <p className="mt-1 text-sm text-gray-500">Gerir funcionalidades da IA, limites de "uso justo" ou pacotes de IA por plano.</p>
+                <p className="mt-1 text-sm text-gray-500">Gerir funcionalidades da IA, limites de &quot;uso justo&quot; ou pacotes de IA por plano.</p>
               </div>
               <div className="bg-gray-50 px-5 py-3">
                 <a href="#" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">Aceder Configurações de IA (Placeholder)</a>
