@@ -2,13 +2,14 @@ import type { Config } from "tailwindcss";
 
 const config: Config = {
   content: [
-    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}", // Include pages if they exist
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}", // Main location for App Router
   ],
   theme: {
     extend: {
       colors: {
+        // Keep existing custom colors
         gray: {
           950: "#0a0a0a",
           900: "#121212",
@@ -27,9 +28,16 @@ const config: Config = {
           400: "#60a5fa",
         }
       },
+      // Add other extensions if needed, e.g., backgroundImage
+      backgroundImage: {
+        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
+        "gradient-conic":
+          "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+      },
     },
   },
-  plugins: [],
+  plugins: [], // Add plugins if needed later
 };
 
 export default config;
+
