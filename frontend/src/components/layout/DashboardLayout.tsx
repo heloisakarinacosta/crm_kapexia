@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
-import { useRouter } from 'next/router';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
