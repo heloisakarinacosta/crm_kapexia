@@ -15,15 +15,14 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    // Removido @tailwindcss/postcss (v4)
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "autoprefixer": "^10.4.19", // Versão estável compatível com v3
+    "autoprefixer": "^10.4.19",
     "eslint": "^9",
     "eslint-config-next": "15.3.2",
-    "postcss": "^8.4.38", // Versão estável compatível com v3
-    "tailwindcss": "^3.4.4", // Downgrade para Tailwind v3
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.4",
     "typescript": "^5"
   }
 }
