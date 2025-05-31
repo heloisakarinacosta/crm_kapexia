@@ -1,7 +1,6 @@
-/** @type {import('next').NextConfig} */
+/** @type {import("next").NextConfig} */
 const nextConfig = {
-  output: 'standalone',
-  // swcMinify: true, // Removido pois não é reconhecido/necessário no Next.js 15+
+  // output: 'standalone', // Removido para usar build padrão
   reactStrictMode: false,
 };
 
