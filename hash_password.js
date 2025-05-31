@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 
 // Defina a password que deseja "hashear"
-const passwordToHash = 'password'; // <-- Substitua 'password' pela password desejada
+const passwordToHash = '123mudar'; // <-- Substitua 'password' pela password desejada
 
 // Número de rondas de salt (igual ao usado no backend)
 const saltRounds = 10;
