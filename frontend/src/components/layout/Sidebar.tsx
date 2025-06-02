@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 
 // Definição de tipos para os itens do menu
@@ -31,23 +32,43 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, toggleSidebar }) => {
 
   return (
     <aside 
-      className={`bg-gray-900 h-screen transition-all duration-300 ease-in-out ${
+      className={`h-screen transition-all duration-300 ease-in-out ${
         collapsed ? 'w-16' : 'w-64'
       } fixed left-0 top-0 z-10`}
+      style={{ backgroundColor: '#1C1C1C' }}
     >
       {/* Header com logo e botão de toggle */}
       <div className="flex items-center justify-between h-16 px-4 border-b border-gray-800">
         {!collapsed && (
-          <div className="text-xl font-bold text-white">Kapexia CRM</div>
+          <div className="flex items-center">
+            <Image 
+              src="/images/logo9-fundo_escuro.png"
+              alt="Kapexia CRM"
+              width={180}
+              height={101}
+              className="object-contain"
+            />
+          </div>
         )}
-        <button 
-          onClick={toggleSidebar}
-          className={`text-gray-400 hover:text-white focus:outline-none ${
-            collapsed ? 'mx-auto' : ''
-          }`}
-        >
-          {collapsed ? '→' : '←'}
-        </button>
+        {collapsed && (
+          <div className="flex justify-center w-full">
+            <Image 
+              src="/images/logo9-fundo_escuro.png"
+              alt="Kapexia CRM"
+              width={32}
+              height={32}
+              className="object-contain"
+            />
+          </div>
+        )}
+        {!collapsed && (
+          <button 
+            onClick={toggleSidebar}
+            className="text-gray-400 hover:text-white focus:outline-none"
+          >
+            ←
+          </button>
+        )}
       </div>
 
       {/* Menu de navegação */}
