@@ -4,12 +4,11 @@ import React, { useState, useEffect } from 'react';
 import BarChartComponent from '@/components/analytics/BarChartComponent';
 import LineChartComponent from '@/components/analytics/LineChartComponent';
 import PieChartComponent from '@/components/analytics/PieChartComponent';
-import AnalyticsFilters from '@/components/analytics/AnalyticsFilters';
 
 export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
-  const [filters, setFilters] = useState({
+  // const [filters, setFilters] = useState({
     date: new Date(),
     period: 'day'
   });
@@ -36,17 +35,17 @@ export default function AnalyticsPage() {
     loadData();
   }, []);
 
-  const handleFilterChange = (newFilters) => {
+  // const handleFilterChange = (newFilters) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
     // Em produção, recarregar dados com os novos filtros
     // loadData(newFilters);
   };
 
-  const handleRefresh = () => {
+  // const handleRefresh = () => {
     loadData();
   };
 
-  const handleExport = () => {
+  // const handleExport = () => {
     // Implementação futura: exportar dados para CSV/Excel
     alert('Funcionalidade de exportação será implementada em breve!');
   };
@@ -56,11 +55,6 @@ export default function AnalyticsPage() {
       <h1 className="text-3xl font-montserrat font-light mb-6">ANÁLISES</h1>
       
       {/* Filtros */}
-      <AnalyticsFilters 
-        onFilterChange={handleFilterChange}
-        onRefresh={handleRefresh}
-        onExport={handleExport}
-      />
       
       {/* Primeira linha - Gráficos principais (mais altos) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
