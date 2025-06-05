@@ -1,10 +1,9 @@
 module.exports = {
   apps : [{
     name   : "crm-frontend",
-    script : "npm", // Usar npm para executar o script start
-    args   : "run start", // Argumento para npm: executar o script 'start'
+    script : "next", // Executar o comando next diretamente
+    args   : "start -p 3001", // Argumentos para o comando next: start na porta 3001
     env: {
-      "PORT": 3001, // O script 'start' (next start) usará esta porta
       "NODE_ENV": "production"
     }
   }]
