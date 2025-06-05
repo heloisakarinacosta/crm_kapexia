@@ -8,10 +8,13 @@ import PieChartComponent from '@/components/analytics/PieChartComponent';
 export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
-  // const [filters, setFilters] = useState({
+  // Comentado completamente para evitar erros de sintaxe
+  /* 
+  const [filters, setFilters] = useState({
     date: new Date(),
     period: 'day'
   });
+  */
 
   const loadData = async () => {
     setLoading(true);
@@ -35,26 +38,28 @@ export default function AnalyticsPage() {
     loadData();
   }, []);
 
-  // const handleFilterChange = (newFilters) => {
+  /* Funções comentadas completamente para evitar erros de sintaxe
+  const handleFilterChange = (newFilters) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
     // Em produção, recarregar dados com os novos filtros
     // loadData(newFilters);
   };
 
-  // const handleRefresh = () => {
+  const handleRefresh = () => {
     loadData();
   };
 
-  // const handleExport = () => {
+  const handleExport = () => {
     // Implementação futura: exportar dados para CSV/Excel
     alert('Funcionalidade de exportação será implementada em breve!');
   };
+  */
 
   return (
     <div className="container mx-auto p-4 space-y-6">
       <h1 className="text-3xl font-montserrat font-light mb-6">ANÁLISES</h1>
       
-      {/* Filtros */}
+      {/* Filtros - comentado para evitar erros */}
       
       {/* Primeira linha - Gráficos principais (mais altos) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
