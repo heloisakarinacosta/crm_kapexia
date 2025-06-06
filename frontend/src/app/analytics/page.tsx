@@ -5,9 +5,23 @@ import BarChartComponent from '@/components/analytics/BarChartComponent';
 import LineChartComponent from '@/components/analytics/LineChartComponent';
 import PieChartComponent from '@/components/analytics/PieChartComponent';
 
+// Definir interface para os dados do dashboard
+interface DashboardData {
+  qualificacao: Array<{x: string, y: number}>;
+  prospeccao: Array<{x: string, y: number}>;
+  expansao: Array<{x: string, y: number}>;
+  distribuicao: Array<{name: string, value: number}>;
+  agendamentos: Array<{name: string, value: number}>;
+  conversao: Array<{name: string, value: number}>;
+  ticketMedio: Array<{mes: string, valor: number}>;
+  txGanhoQualificacao: Array<{mes: string, total: number, agendados: number}>;
+  txGanhoProspeccao: Array<{mes: string, total: number, propostas: number}>;
+  ticketTrimestral: Array<{mes: string, valor: number}>;
+}
+
 export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
-  const [data, setData] = useState(null);
+  const [data, setData] = useState<DashboardData | null>(null);
   // Comentado completamente para evitar erros de sintaxe
   /* 
   const [filters, setFilters] = useState({
@@ -125,6 +139,7 @@ export default function AnalyticsPage() {
         {/* TICKET MÉDIO CLIENTES */}
         <BarChartComponent 
           title="TICKET MÉDIO CLIENTES"
+          subtitle="Valor Médio Mensal"
           data={data?.ticketMedio || []}
           loading={loading}
           xAxisKey="mes"
@@ -138,6 +153,7 @@ export default function AnalyticsPage() {
         {/* TX GANHO QUALIFICAÇÃO */}
         <BarChartComponent 
           title="TX GANHO QUALIFICAÇÃO"
+          subtitle="Conversão de Leads"
           data={data?.txGanhoQualificacao || []}
           loading={loading}
           xAxisKey="mes"
@@ -150,6 +166,7 @@ export default function AnalyticsPage() {
         {/* TX GANHO PROSPECÇÃO */}
         <BarChartComponent 
           title="TX GANHO PROSPECÇÃO"
+          subtitle="Propostas vs Total"
           data={data?.txGanhoProspeccao || []}
           loading={loading}
           xAxisKey="mes"
@@ -162,6 +179,7 @@ export default function AnalyticsPage() {
         {/* TICKET MÉDIO TRIMESTRAL */}
         <BarChartComponent 
           title="TICKET MÉDIO TRIMESTRAL"
+          subtitle="Valor por Trimestre"
           data={data?.ticketTrimestral || []}
           loading={loading}
           xAxisKey="mes"

@@ -7,21 +7,28 @@ import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { CalendarIcon, RefreshCw, Download } from 'lucide-react';
+import { AnalyticsFiltersProps, FilterData } from '@/types/ui';
 
-export default function AnalyticsFilters({ onFilterChange, onRefresh, onExport }) {
-  const [date, setDate] = useState(new Date());
-  const [period, setPeriod] = useState('day');
+export default function AnalyticsFilters({ onFilterChange, onRefresh, onExport }: AnalyticsFiltersProps) {
+  const [date, setDate] = useState<Date>(new Date());
+  const [period, setPeriod] = useState<string>('day');
 
-  const handleDateChange = (newDate) => {
-    setDate(newDate);
-    onFilterChange({ date: newDate, period });
+  const handleDateChange = (newDate: Date | undefined) => {
+    if (newDate) {
+      setDate(newDate);
+      onFilterChange({ date: newDate, period });
+    }
   };
 
-  const handlePeriodChange = (newPeriod) => {
+  const handlePeriodChange = (newPeriod: string) => {
     setPeriod(newPeriod);
     onFilterChange({ date, period: newPeriod });
+  };
+
+  // Função para formatar a data usando o formato brasileiro
+  const formatDate = (date: Date): string => {
+    return format(date, 'dd/MM/yyyy');
   };
 
   return (
@@ -58,7 +65,7 @@ export default function AnalyticsFilters({ onFilterChange, onRefresh, onExport }
                   className="w-[180px] justify-start text-left font-normal"
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date ? format(date, 'PPP', { locale: ptBR }) : <span>Selecione uma data</span>}
+                  {date ? formatDate(date) : <span>Selecione uma data</span>}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0">
@@ -67,7 +74,6 @@ export default function AnalyticsFilters({ onFilterChange, onRefresh, onExport }
                   selected={date}
                   onSelect={handleDateChange}
                   initialFocus
-                  locale={ptBR}
                 />
               </PopoverContent>
             </Popover>

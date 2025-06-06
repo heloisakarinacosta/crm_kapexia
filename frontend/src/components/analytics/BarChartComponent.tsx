@@ -14,6 +14,7 @@ import {
   Legend,
   Cell
 } from 'recharts';
+import { BarChartComponentProps } from '@/types/ui';
 
 // Cores da paleta Kapexia
 const COLORS = ['#40E0D0', '#53B6AC', '#588C87', '#27514E', '#D040E0', '#E0D040'];
@@ -30,7 +31,7 @@ export default function BarChartComponent({
   showLegend = false,
   stacked = false,
   stackedKeys = []
-}) {
+}: BarChartComponentProps) {
   if (!data || data.length === 0) {
     return (
       <Card className="bg-white dark:bg-white rounded-xl shadow-md">

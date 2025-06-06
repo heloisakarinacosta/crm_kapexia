@@ -13,6 +13,7 @@ import {
   Tooltip,
   Legend
 } from 'recharts';
+import { LineChartComponentProps } from '@/types/ui';
 
 export default function LineChartComponent({ 
   title, 
@@ -24,7 +25,7 @@ export default function LineChartComponent({
   color = '#53B6AC',
   height = 200,
   showLegend = false
-}) {
+}: LineChartComponentProps) {
   if (!data || data.length === 0) {
     return (
       <Card className="bg-white dark:bg-white rounded-xl shadow-md">
@@ -67,8 +68,8 @@ export default function LineChartComponent({
                 dataKey={dataKey} 
                 stroke={color} 
                 strokeWidth={2}
-                dot={{ r: 4 }}
-                activeDot={{ r: 6 }}
+                dot={{ r: 4, fill: color }}
+                activeDot={{ r: 6, fill: color }}
               />
             </LineChart>
           </ResponsiveContainer>

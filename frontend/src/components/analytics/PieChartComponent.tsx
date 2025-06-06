@@ -11,6 +11,7 @@ import {
   Tooltip,
   Legend
 } from 'recharts';
+import { PieChartComponentProps } from '@/types/ui';
 
 // Cores da paleta Kapexia
 const COLORS = ['#40E0D0', '#53B6AC', '#588C87', '#27514E', '#D040E0', '#E0D040'];
@@ -22,7 +23,7 @@ export default function PieChartComponent({
   donut = false,
   showPercentage = true,
   height = 200
-}) {
+}: PieChartComponentProps) {
   if (!data || data.length === 0) {
     return (
       <Card className="bg-white dark:bg-white rounded-xl shadow-md">
@@ -61,7 +62,7 @@ export default function PieChartComponent({
                 innerRadius={donut ? 60 : 0}
                 outerRadius={80}
                 fill="#8884d8"
-                dataKey="valor"
+                dataKey="value"
                 label={showPercentage ? 
                   ({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%` : 
                   ({ name }) => name
