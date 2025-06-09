@@ -8,7 +8,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
 import { CalendarIcon, RefreshCw, Download } from 'lucide-react';
-import { AnalyticsFiltersProps, FilterData } from '@/types/ui';
+import { AnalyticsFiltersProps } from '@/types/ui';
 
 export default function AnalyticsFilters({ onFilterChange, onRefresh, onExport }: AnalyticsFiltersProps) {
   const [date, setDate] = useState<Date>(new Date());

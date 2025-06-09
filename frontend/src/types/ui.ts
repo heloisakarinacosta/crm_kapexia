@@ -1,5 +1,4 @@
 import { ButtonHTMLAttributes, HTMLAttributes, ReactNode, SelectHTMLAttributes } from 'react';
-import { Locale } from 'date-fns';
 
 // Button Component Types
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -20,7 +19,7 @@ export interface CalendarProps {
   selected?: Date;
   onSelect?: (date: Date | undefined) => void;
   initialFocus?: boolean;
-  locale?: Locale;
+  locale?: unknown;
   className?: string;
 }
 
