@@ -21,6 +21,7 @@ export interface CalendarProps {
   initialFocus?: boolean;
   locale?: unknown;
   className?: string;
+  children?: React.ReactNode;
 }
 
 // Select Component Types
