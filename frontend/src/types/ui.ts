@@ -15,11 +15,6 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {
 
 // Calendar Component Types
 export interface CalendarProps {
-  mode?: 'single' | 'range' | 'multiple';
-  selected?: Date;
-  onSelect?: (date: Date | undefined) => void;
-  initialFocus?: boolean;
-  locale?: unknown;
   className?: string;
   children?: React.ReactNode;
 }

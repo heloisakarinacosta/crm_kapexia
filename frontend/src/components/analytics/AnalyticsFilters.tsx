@@ -11,15 +11,8 @@ import { CalendarIcon, RefreshCw, Download } from 'lucide-react';
 import { AnalyticsFiltersProps } from '@/types/ui';
 
 export default function AnalyticsFilters({ onFilterChange, onRefresh, onExport }: AnalyticsFiltersProps) {
-  const [date, setDate] = useState<Date>(new Date());
+  const [date] = useState<Date>(new Date());
   const [period, setPeriod] = useState<string>('day');
-
-  const handleDateChange = (newDate: Date | undefined) => {
-    if (newDate) {
-      setDate(newDate);
-      onFilterChange({ date: newDate, period });
-    }
-  };
 
   const handlePeriodChange = (newPeriod: string) => {
     setPeriod(newPeriod);
@@ -69,12 +62,9 @@ export default function AnalyticsFilters({ onFilterChange, onRefresh, onExport }
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={handleDateChange}
-                  initialFocus
-                />
+                <Calendar>
+                  Seletor de data em desenvolvimento
+                </Calendar>
               </PopoverContent>
             </Popover>
           </div>
