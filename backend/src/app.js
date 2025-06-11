@@ -19,8 +19,13 @@ const app = express();
 
 // Configurações de segurança
 app.use(helmet());
-app.use(cors());
+app.use(cors({
+  origin: ['https://crm.kapexia.com.br', 'http://localhost:3001'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+}));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 
 // Limitar requisições
@@ -29,6 +34,17 @@ const limiter = rateLimit({
   max: 100 // limite de 100 requisições por IP
 });
 app.use(limiter);
+
+// Debug middleware to log all requests
+app.use((req, res, next) => {
+  console.log(`[DEBUG] ${req.method} ${req.originalUrl}`);
+  next();
+});
+
+// Basic Route
+app.get("/", (req, res) => {
+  res.json({ message: "Welcome to Kapexia CRM Backend API!" });
+});
 
 // Rotas
 app.use('/api/auth', authRoutes);
@@ -59,11 +75,6 @@ app.use((req, res) => {
     success: false,
     message: 'Rota não encontrada'
   });
-});
-
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
 });
 
 module.exports = app;
