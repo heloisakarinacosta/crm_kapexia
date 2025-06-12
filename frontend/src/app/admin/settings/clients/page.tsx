@@ -30,7 +30,7 @@ export default function ClientsPage() {
       setLoading(true);
       const response = await fetch('/api/clients', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
         }
       });
       

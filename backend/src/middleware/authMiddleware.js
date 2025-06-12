@@ -17,7 +17,7 @@ const authMiddleware = async (req, res, next) => {
     // Buscar informações do usuário no banco de dados
     const [rows] = await pool.execute(
       'SELECT id, username, email, client_id FROM administrators WHERE id = ?',
-      [decoded.id]
+      [decoded.user.id]
     );
 
     if (rows.length === 0) {

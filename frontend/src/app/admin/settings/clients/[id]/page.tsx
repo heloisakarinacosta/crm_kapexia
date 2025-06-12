@@ -50,7 +50,7 @@ export default function EditClientPage() {
     try {
       const response = await fetch(`/api/clients/${clientId}`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
         }
       });
 

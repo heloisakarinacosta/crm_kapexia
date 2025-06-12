@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'; // Uncomment when navigation is nee
 // import { Label } from '@/components/ui/label';
 // import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3002/api";
 
 export default function LoginPage() {
   const [username, setUsername] = useState('admin'); // Default to admin for testing
