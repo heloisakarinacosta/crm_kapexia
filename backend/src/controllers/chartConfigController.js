@@ -3,6 +3,21 @@ const DatabaseConfig = require('../models/databaseConfigModel');
 const { validationResult } = require('express-validator');
 
 const ChartConfigController = {
+  // Obter todas as configurações de gráficos
+  async getAllConfigs(req, res) {
+    try {
+      const configs = await ChartConfig.findAll();
+      res.json({ success: true, data: configs });
+    } catch (error) {
+      console.error('Erro ao buscar configurações de gráficos:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Erro ao buscar configurações de gráficos', 
+        error: error.message 
+      });
+    }
+  },
+
   // Obter todas as configurações de gráficos por ID de cliente
   async getConfigsByClientId(req, res) {
     try {
@@ -68,12 +83,13 @@ const ChartConfigController = {
       
       const configData = {
         client_id: req.body.client_id,
-        chart_position: req.body.chart_position,
+        chart_name: req.body.chart_name,
         chart_type: req.body.chart_type,
         chart_title: req.body.chart_title,
-        chart_subtitle: req.body.chart_subtitle,
-        chart_description: req.body.chart_description,
+        database_config_id: req.body.database_config_id,
         sql_query: req.body.sql_query,
+        x_axis_field: req.body.x_axis_field,
+        y_axis_field: req.body.y_axis_field,
         is_active: req.body.is_active
       };
       
@@ -128,12 +144,13 @@ const ChartConfigController = {
       }
       
       const configData = {
-        chart_position: req.body.chart_position,
+        chart_name: req.body.chart_name,
         chart_type: req.body.chart_type,
         chart_title: req.body.chart_title,
-        chart_subtitle: req.body.chart_subtitle,
-        chart_description: req.body.chart_description,
+        database_config_id: req.body.database_config_id,
         sql_query: req.body.sql_query,
+        x_axis_field: req.body.x_axis_field,
+        y_axis_field: req.body.y_axis_field,
         is_active: req.body.is_active
       };
       

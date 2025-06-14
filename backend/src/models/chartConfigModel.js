@@ -1,6 +1,13 @@
 const { pool } = require("../config/db");
 
 const ChartConfig = {
+  async findAll() {
+    const [rows] = await pool.execute(
+      "SELECT * FROM chart_configs ORDER BY client_id, chart_position"
+    );
+    return rows;
+  },
+
   async findByClientId(clientId) {
     const [rows] = await pool.execute(
       "SELECT * FROM chart_configs WHERE client_id = ? ORDER BY chart_position",
@@ -20,22 +27,23 @@ const ChartConfig = {
   async create(configData) {
     const { 
       client_id, 
-      chart_position, 
+      chart_name,
       chart_type, 
       chart_title, 
-      chart_subtitle, 
-      chart_description, 
+      database_config_id,
       sql_query, 
+      x_axis_field,
+      y_axis_field,
       is_active 
     } = configData;
     
     const [result] = await pool.execute(
       `INSERT INTO chart_configs 
-       (client_id, chart_position, chart_type, chart_title, chart_subtitle, 
-        chart_description, sql_query, is_active) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [client_id, chart_position, chart_type, chart_title, chart_subtitle, 
-       chart_description, sql_query, is_active !== undefined ? is_active : true]
+       (client_id, chart_name, chart_type, chart_title, database_config_id, 
+        sql_query, x_axis_field, y_axis_field, is_active) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [client_id, chart_name, chart_type, chart_title, database_config_id, 
+       sql_query, x_axis_field, y_axis_field, is_active !== undefined ? is_active : true]
     );
     
     return { id: result.insertId, ...configData };
@@ -43,28 +51,30 @@ const ChartConfig = {
 
   async update(id, configData) {
     const { 
-      chart_position, 
+      chart_name,
       chart_type, 
       chart_title, 
-      chart_subtitle, 
-      chart_description, 
+      database_config_id,
       sql_query, 
+      x_axis_field,
+      y_axis_field,
       is_active 
     } = configData;
     
     await pool.execute(
       `UPDATE chart_configs SET 
-       chart_position = ?, 
+       chart_name = ?,
        chart_type = ?, 
        chart_title = ?, 
-       chart_subtitle = ?, 
-       chart_description = ?, 
+       database_config_id = ?,
        sql_query = ?, 
+       x_axis_field = ?,
+       y_axis_field = ?,
        is_active = ?,
        updated_at = CURRENT_TIMESTAMP
        WHERE id = ?`,
-      [chart_position, chart_type, chart_title, chart_subtitle, 
-       chart_description, sql_query, is_active !== undefined ? is_active : true, id]
+      [chart_name, chart_type, chart_title, database_config_id, 
+       sql_query, x_axis_field, y_axis_field, is_active !== undefined ? is_active : true, id]
     );
     
     return { id, ...configData };
