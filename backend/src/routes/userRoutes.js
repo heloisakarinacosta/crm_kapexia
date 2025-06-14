@@ -2,10 +2,11 @@ const express = require('express');
 const router = express.Router();
 const { body } = require('express-validator');
 const authMiddleware = require('../middleware/authMiddleware');
+const debugAuthMiddleware = require('../middleware/debugAuthMiddleware');
 const User = require('../models/userModel');
 
 // Middleware para verificar autenticação
-router.use(authMiddleware);
+router.use(debugAuthMiddleware);
 
 // Obter todos os usuários (administradores)
 router.get('/', async (req, res) => {
