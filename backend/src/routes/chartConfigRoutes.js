@@ -50,3 +50,4 @@ router.post('/test-query', [
 ], ChartConfigController.testSqlQuery);
 
 module.exports = router;
+
