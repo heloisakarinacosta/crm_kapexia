@@ -37,16 +37,23 @@ const ChartConfig = {
       is_active 
     } = configData;
     
+    // Buscar a próxima posição disponível para o cliente
+    const [positionResult] = await pool.execute(
+      'SELECT COALESCE(MAX(chart_position), 0) + 1 as next_position FROM chart_configs WHERE client_id = ?',
+      [client_id]
+    );
+    const chart_position = positionResult[0].next_position;
+    
     const [result] = await pool.execute(
       `INSERT INTO chart_configs 
-       (client_id, chart_name, chart_type, chart_title, database_config_id, 
+       (client_id, chart_position, chart_name, chart_type, chart_title, database_config_id, 
         sql_query, x_axis_field, y_axis_field, is_active) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [client_id, chart_name, chart_type, chart_title, database_config_id, 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [client_id, chart_position, chart_name, chart_type, chart_title, database_config_id, 
        sql_query, x_axis_field, y_axis_field, is_active !== undefined ? is_active : true]
     );
     
-    return { id: result.insertId, ...configData };
+    return { id: result.insertId, chart_position, ...configData };
   },
 
   async update(id, configData) {
