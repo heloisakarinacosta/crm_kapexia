@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useRouter, useParams } from 'next/navigation';
 
@@ -46,7 +46,7 @@ export default function EditClientPage() {
     }
   }, [clientId]);
 
-  const loadClient = async () => {
+  const loadClient = useCallback(async () => {
     try {
       const response = await fetch(`/api/clients/${clientId}`, {
         headers: {
@@ -73,9 +73,9 @@ export default function EditClientPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [clientId]);
 
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     try {
       const response = await fetch('/api/users', {
         headers: {
@@ -90,7 +90,14 @@ export default function EditClientPage() {
     } catch (err) {
       console.error('Erro ao carregar usuários:', err);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (clientId) {
+      loadClient();
+      loadUsers();
+    }
+  }, [clientId, loadClient, loadUsers]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

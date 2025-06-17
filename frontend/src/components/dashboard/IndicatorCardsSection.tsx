@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import IndicatorCard from './IndicatorCard';
 
 // Interface para os dados dos indicadores
@@ -23,7 +23,7 @@ const IndicatorCardsSection: React.FC = () => {
     loadCardData();
   }, []);
 
-  const loadCardData = async () => {
+  const loadCardData = useCallback(async () => {
     try {
       const token = localStorage.getItem('authToken');
       
@@ -72,7 +72,11 @@ const IndicatorCardsSection: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadCardData();
+  }, [loadCardData]);
 
   const getIconForPosition = (position: number): string => {
     const icons = {

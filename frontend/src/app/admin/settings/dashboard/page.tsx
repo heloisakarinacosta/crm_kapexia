@@ -25,7 +25,6 @@ interface OpenAIConfig {
 
 export default function DashboardConfigPage() {
   const [cardConfigs, setCardConfigs] = useState<DashboardCardConfig[]>([]);
-  const [openaiConfig, setOpenaiConfig] = useState<OpenAIConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'cards' | 'openai'>('cards');
@@ -80,7 +79,6 @@ export default function DashboardConfigPage() {
       if (openaiResponse.ok) {
         const openaiData = await openaiResponse.json();
         if (openaiData.data) {
-          setOpenaiConfig(openaiData.data);
           setOpenaiForm({
             api_key: openaiData.data.api_key || '',
             assistant_id: openaiData.data.assistant_id || '',
