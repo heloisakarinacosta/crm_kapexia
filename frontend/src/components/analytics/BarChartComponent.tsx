@@ -10,14 +10,9 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
-  Legend,
-  Cell
+  Tooltip
 } from 'recharts';
 import { BarChartComponentProps } from '@/types/ui';
-
-// Cores da paleta Kapexia
-const COLORS = ['#40E0D0', '#53B6AC', '#588C87', '#27514E', '#D040E0', '#E0D040'];
 
 export default function BarChartComponent({ 
   title, 
@@ -28,22 +23,91 @@ export default function BarChartComponent({
   xAxisKey = 'dia',
   color = '#40E0D0',
   height = 200,
-  showLegend = false,
-  stacked = false,
-  stackedKeys = []
-}: BarChartComponentProps) {
-  if (!data || data.length === 0) {
+  compact = false
+}: BarChartComponentProps & { compact?: boolean }) {
+  console.log('🔍 BarChartComponent Debug:', {
+    title,
+    subtitle,
+    dataLength: data?.length || 0,
+    dataKey,
+    xAxisKey,
+    sampleData: data?.slice(0, 2),
+    loading,
+    dataIsArray: Array.isArray(data),
+    dataExists: !!data,
+    firstItem: data?.[0],
+    compact,
+    height
+  });
+
+  const hasValidData = data && Array.isArray(data) && data.length > 0;
+  console.log('📊 Validação de dados:', {
+    hasValidData,
+    dataType: typeof data,
+    dataConstructor: data?.constructor?.name
+  });
+
+  // Teste com dados hardcoded para debug
+  const testData = [
+    { dia: 1, total_leads: 45 },
+    { dia: 2, total_leads: 38 },
+    { dia: 3, total_leads: 52 }
+  ];
+  
+  // Remover dados de teste para permitir dados reais
+  const useTestData = false; // title.includes('QUALIFICAÇÃO');
+
+  // Converter valores string para número se necessário
+  let processedData = data;
+  if (hasValidData && data[0] && dataKey) {
+    processedData = data.map(item => {
+      const newItem = { ...item };
+      if (typeof newItem[dataKey] === 'string' && !isNaN(Number(newItem[dataKey]))) {
+        newItem[dataKey] = Number(newItem[dataKey]);
+      }
+      return newItem;
+    });
+    
+    if (JSON.stringify(data) !== JSON.stringify(processedData)) {
+      console.log('🔄 Convertendo strings para números:', {
+        original: data.slice(0, 2),
+        converted: processedData.slice(0, 2),
+        field: dataKey
+      });
+    }
+  }
+
+  const finalProcessedData = useTestData ? testData : processedData;
+
+  // Log dos dados que serão renderizados no gráfico
+  if (hasValidData) {
+    console.log('📈 Renderizando BarChart com dados:', {
+      dataForChart: finalProcessedData,
+      dataKeys: { xAxisKey, dataKey },
+      chartHeight: height,
+      firstThreeItems: finalProcessedData?.slice(0, 3),
+      allData: JSON.stringify(finalProcessedData?.slice(0, 3), null, 2)
+    });
+  }
+
+  if (!hasValidData) {
     return (
       <Card className="bg-white dark:bg-white rounded-xl shadow-md">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-montserrat font-light text-center text-gray-800">
+        <CardHeader className={compact ? "pb-1" : "pb-2"}>
+          <CardTitle className={`font-montserrat font-light text-center text-gray-800 ${
+            compact ? "text-sm" : "text-lg"
+          }`}>
             {title}
-            {subtitle && <p className="text-sm text-gray-600">{subtitle}</p>}
+            {subtitle && (
+              <p className={`text-gray-600 ${compact ? "text-xs mt-0" : "text-sm"}`}>
+                {subtitle}
+              </p>
+            )}
           </CardTitle>
         </CardHeader>
-        <CardContent className={`h-${height}`}>
+        <CardContent style={{height: `${height * (compact ? 3 : 4)}px`, minHeight: `${height * (compact ? 3 : 4)}px`}}>
           <div className="flex items-center justify-center h-full">
-            <p className="text-gray-500">Sem dados disponíveis</p>
+            <p className={`text-gray-500 ${compact ? "text-xs" : "text-sm"}`}>Sem dados disponíveis</p>
           </div>
         </CardContent>
       </Card>
@@ -52,44 +116,41 @@ export default function BarChartComponent({
 
   return (
     <Card className="bg-white dark:bg-white rounded-xl shadow-md">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-montserrat font-light text-center text-gray-800">
+      <CardHeader className={compact ? "pb-1" : "pb-2"}>
+        <CardTitle className={`font-montserrat font-light text-center text-gray-800 ${
+          compact ? "text-sm" : "text-lg"
+        }`}>
           {title}
-          {subtitle && <p className="text-sm text-gray-600">{subtitle}</p>}
+          {subtitle && (
+            <p className={`text-gray-600 ${compact ? "text-xs mt-0" : "text-sm"}`}>
+              {subtitle}
+            </p>
+          )}
         </CardTitle>
       </CardHeader>
-      <CardContent className={`h-${height}`}>
+      <CardContent style={{height: `${height * (compact ? 3 : 4)}px`, minHeight: `${height * (compact ? 3 : 4)}px`}}>
         {loading ? (
           <Skeleton className="w-full h-full" />
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#ACBCBA" />
-              <XAxis dataKey={xAxisKey} stroke="#1C1C1C" />
-              <YAxis stroke="#1C1C1C" />
-              <Tooltip />
-              {showLegend && <Legend />}
-              
-              {stacked && stackedKeys.length > 0 ? (
-                // Renderizar barras empilhadas
-                stackedKeys.map((key, index) => (
-                  <Bar 
-                    key={key} 
-                    dataKey={key} 
-                    stackId="a" 
-                    fill={COLORS[index % COLORS.length]} 
-                  />
-                ))
-              ) : (
-                // Renderizar barra única
-                <Bar dataKey={dataKey} fill={color}>
-                  {data.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={color} />
-                  ))}
-                </Bar>
-              )}
-            </BarChart>
-          </ResponsiveContainer>
+              <BarChart data={finalProcessedData} width={400} height={250}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey={xAxisKey} 
+                  tick={{ fontSize: compact ? 10 : 12 }}
+                />
+                <YAxis 
+                  tick={{ fontSize: compact ? 10 : 12 }}
+                />
+                <Tooltip 
+                  contentStyle={{ 
+                    fontSize: compact ? '11px' : '13px',
+                    padding: compact ? '4px 6px' : '8px 10px'
+                  }}
+                />
+                <Bar dataKey={dataKey} fill={color} />
+              </BarChart>
+            </ResponsiveContainer>
         )}
       </CardContent>
     </Card>

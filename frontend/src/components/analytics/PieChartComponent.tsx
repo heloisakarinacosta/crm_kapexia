@@ -22,19 +22,65 @@ export default function PieChartComponent({
   loading = false, 
   donut = false,
   showPercentage = true,
-  height = 200
-}: PieChartComponentProps) {
-  if (!data || data.length === 0) {
+  height = 200,
+  compact = false
+}: PieChartComponentProps & { compact?: boolean }) {
+  console.log('🔍 PieChartComponent Debug:', {
+    title,
+    dataLength: data?.length || 0,
+    sampleData: data?.slice(0, 2),
+    loading,
+    dataIsArray: Array.isArray(data),
+    dataExists: !!data,
+    firstItem: data?.[0],
+    compact,
+    height
+  });
+  
+  console.log('🎯 COMPACT STATUS:', title, '| compact =', compact, '| height =', height);
+
+  const hasValidData = data && Array.isArray(data) && data.length > 0;
+  console.log('📊 Validação de dados PieChart:', {
+    hasValidData,
+    dataType: typeof data,
+    dataConstructor: data?.constructor?.name
+  });
+
+  // Para PieChart, precisamos converter dados para formato {name, value}
+  let finalData = data;
+  if (hasValidData && data[0] && !data[0].hasOwnProperty('value')) {
+    // Se os dados não têm campo 'value', vamos mapear
+    const firstItem = data[0];
+    const keys = Object.keys(firstItem);
+    const nameKey = keys.find(k => typeof firstItem[k] === 'string') || keys[0];
+    const valueKey = keys.find(k => typeof firstItem[k] === 'number') || keys[1];
+    
+    finalData = data.map((item, index) => ({
+      name: item[nameKey] || `Item ${index + 1}`,
+      value: item[valueKey] || 0
+    }));
+    
+    console.log('🔄 Convertendo dados PieChart:', {
+      original: data.slice(0, 2),
+      converted: finalData.slice(0, 2),
+      nameKey,
+      valueKey
+    });
+  }
+
+  if (!hasValidData) {
     return (
       <Card className="bg-white dark:bg-white rounded-xl shadow-md">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-montserrat font-light text-center text-gray-800">
+        <CardHeader className={compact ? "pb-1" : "pb-2"}>
+          <CardTitle className={`font-montserrat font-light text-center text-gray-800 ${
+            compact ? "text-sm" : "text-lg"
+          }`}>
             {title}
           </CardTitle>
         </CardHeader>
-        <CardContent className={`h-${height}`}>
+        <CardContent style={{height: `${height * (compact ? 3 : 4)}px`, minHeight: `${height * (compact ? 3 : 4)}px`}}>
           <div className="flex items-center justify-center h-full">
-            <p className="text-gray-500">Sem dados disponíveis</p>
+            <p className={`text-gray-500 ${compact ? "text-xs" : "text-sm"}`}>Sem dados disponíveis</p>
           </div>
         </CardContent>
       </Card>
@@ -43,37 +89,74 @@ export default function PieChartComponent({
 
   return (
     <Card className="bg-white dark:bg-white rounded-xl shadow-md">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-montserrat font-light text-center text-gray-800">
+      <CardHeader className={compact ? "pb-1" : "pb-2"}>
+        <CardTitle className={`font-montserrat font-light text-center text-gray-800 ${
+          compact ? "text-sm" : "text-lg"
+        }`}>
           {title}
         </CardTitle>
       </CardHeader>
-      <CardContent className={`h-${height}`}>
+      <CardContent style={{height: `${height * (compact ? 3 : 4)}px`, minHeight: `${height * (compact ? 3 : 4)}px`}}>
         {loading ? (
           <Skeleton className="w-full h-full" />
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
+            <PieChart width={400} height={250}>
               <Pie
-                data={data}
+                data={finalData}
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                innerRadius={donut ? 60 : 0}
-                outerRadius={80}
+                innerRadius={donut ? (compact ? 30 : 60) : 0}
+				outerRadius={compact ? 50 : 80}
                 fill="#8884d8"
                 dataKey="value"
                 label={showPercentage ? 
-                  ({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%` : 
-                  ({ name }) => name
+                  (props) => {
+                    const { name, percent } = props;
+                    return (
+                      <text 
+                        x={props.x} 
+                        y={props.y} 
+                        fill="black" 
+                        fontSize={compact ? '10px' : '12px'}
+                        textAnchor="middle"
+                        dominantBaseline="central"
+                      >
+                        {`${name} ${(percent * 100).toFixed(0)}%`}
+                      </text>
+                    );
+                  } : 
+                  (props) => {
+                    const { name } = props;
+                    return (
+                      <text 
+                        x={props.x} 
+                        y={props.y} 
+                        fill="black" 
+                        fontSize={compact ? '10px' : '12px'}
+                        textAnchor="middle"
+                        dominantBaseline="central"
+                      >
+                        {name}
+                      </text>
+                    );
+                  }
                 }
               >
-                {data.map((entry, index) => (
+                {finalData?.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip />
-              <Legend />
+              <Tooltip 
+                contentStyle={{ 
+                  fontSize: compact ? '10px' : '12px',
+                  padding: compact ? '4px 6px' : '8px 10px'
+                }}
+              />
+              <Legend 
+                wrapperStyle={{ fontSize: compact ? '10px' : '12px' }}
+              />
             </PieChart>
           </ResponsiveContainer>
         )}

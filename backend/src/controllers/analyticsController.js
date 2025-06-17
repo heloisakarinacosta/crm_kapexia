@@ -47,6 +47,8 @@ const AnalyticsController = {
               description: config.chart_description,
               type: config.chart_type,
               data: result.data,
+              x_axis_field: config.x_axis_field,
+              y_axis_field: config.y_axis_field,
               demo: result.demo
             });
           } else {
@@ -58,6 +60,8 @@ const AnalyticsController = {
               description: config.chart_description,
               type: config.chart_type,
               error: result.message,
+              x_axis_field: config.x_axis_field,
+              y_axis_field: config.y_axis_field,
               demo: result.demo
             });
           }
