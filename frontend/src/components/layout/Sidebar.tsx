@@ -28,6 +28,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, toggleSidebar }) => {
     { id: 'leads', name: 'Leads', icon: '👥', path: '/admin/leads' },
     { id: 'chat', name: 'Chat IA', icon: '💬', path: '/admin/chat' },
     { id: 'settings', name: 'Configurações', icon: '⚙️', path: '/admin/settings' },
+    { id: 'dashboard-config', name: 'Config Dashboard', icon: '🔧', path: '/admin/settings/dashboard' },
   ];
 
   return (
