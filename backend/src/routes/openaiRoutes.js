@@ -20,5 +20,14 @@ router.post('/', [
 // Excluir configuração OpenAI
 router.delete('/', OpenAIController.deleteConfig);
 
+// Listar assistants disponíveis
+router.post('/assistants', OpenAIController.listAssistants);
+
+// Listar modelos disponíveis
+router.post('/models', OpenAIController.listModels);
+
+// Enviar mensagem para chat
+router.post('/chat', authMiddleware, OpenAIController.sendMessage);
+
 module.exports = router;
 

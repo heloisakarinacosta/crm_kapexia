@@ -6,16 +6,14 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
-
 // Importar rotas
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const clientRoutes = require('./routes/clientRoutes');
-const databaseConfigRoutes = require('./routes/databaseConfigRoutes');
 const chartConfigRoutes = require('./routes/chartConfigRoutes');
-const analyticsRoutes = require('./routes/analyticsRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const openaiRoutes = require('./routes/openaiRoutes');
+const ragRoutes = require('./routes/ragRoutes');
 
 const app = express();
 
@@ -57,6 +55,7 @@ app.use('/api/chart-configs', chartConfigRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/openai', openaiRoutes);
+app.use('/api/rag', ragRoutes);
 
 // Rota de teste
 app.get('/api/health', (req, res) => {

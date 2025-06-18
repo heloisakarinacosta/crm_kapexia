@@ -28,6 +28,12 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, toggleSidebar }) => {
     { id: 'leads', name: 'Leads', icon: '👥', path: '/admin/leads' },
     { id: 'chat', name: 'Chat IA', icon: '💬', path: '/admin/chat' },
     { id: 'settings', name: 'Configurações', icon: '⚙️', path: '/admin/settings' },
+  ];
+
+  // Itens do submenu de configurações
+  const settingsSubItems = [
+    { id: 'clients', name: 'Clientes', icon: '👥', path: '/admin/settings/clients' },
+    { id: 'chart-configs', name: 'Configuração de Gráficos', icon: '📊', path: '/admin/settings/chart-configs' },
     { id: 'dashboard-config', name: 'Config Dashboard', icon: '🔧', path: '/admin/settings/dashboard' },
   ];
 
@@ -77,19 +83,60 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, toggleSidebar }) => {
         <ul>
           {menuItems.map((item) => (
             <li key={item.id} className="mb-2">
-              <Link 
-                href={item.path}
-                className={`flex items-center px-4 py-3 ${
-                  pathname === item.path 
-                    ? 'bg-blue-600 text-white' 
-                    : 'text-gray-400 hover:bg-gray-800 hover:text-white'
-                } transition-colors duration-200 ${
-                  collapsed ? 'justify-center' : ''
-                }`}
-              >
-                <span className="text-xl">{item.icon}</span>
-                {!collapsed && <span className="ml-4">{item.name}</span>}
-              </Link>
+              {item.id === 'settings' ? (
+                // Menu de configurações com submenu
+                <div>
+                  <Link 
+                    href={item.path}
+                    className={`flex items-center px-4 py-3 ${
+                      pathname.startsWith('/admin/settings') 
+                        ? 'bg-blue-600 text-white' 
+                        : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                    } transition-colors duration-200 ${
+                      collapsed ? 'justify-center' : ''
+                    }`}
+                  >
+                    <span className="text-xl">{item.icon}</span>
+                    {!collapsed && <span className="ml-4">{item.name}</span>}
+                  </Link>
+                  
+                  {/* Submenu de configurações */}
+                  {!collapsed && pathname.startsWith('/admin/settings') && (
+                    <ul className="ml-8 mt-2 space-y-1">
+                      {settingsSubItems.map((subItem) => (
+                        <li key={subItem.id}>
+                          <Link
+                            href={subItem.path}
+                            className={`flex items-center px-3 py-2 rounded-lg text-sm transition-colors duration-200 ${
+                              pathname === subItem.path || pathname.startsWith(subItem.path + '/')
+                                ? 'bg-blue-500 text-white'
+                                : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                            }`}
+                          >
+                            <span className="mr-3">{subItem.icon}</span>
+                            <span>{subItem.name}</span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ) : (
+                // Itens normais do menu
+                <Link 
+                  href={item.path}
+                  className={`flex items-center px-4 py-3 ${
+                    pathname === item.path 
+                      ? 'bg-blue-600 text-white' 
+                      : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                  } transition-colors duration-200 ${
+                    collapsed ? 'justify-center' : ''
+                  }`}
+                >
+                  <span className="text-xl">{item.icon}</span>
+                  {!collapsed && <span className="ml-4">{item.name}</span>}
+                </Link>
+              )}
             </li>
           ))}
         </ul>

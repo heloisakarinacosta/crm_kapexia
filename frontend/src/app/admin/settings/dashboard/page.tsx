@@ -34,10 +34,18 @@ export default function DashboardConfigPage() {
     assistant_id: '',
     model: 'gpt-4',
     system_prompt: '',
+    rag_enabled: false,
+    embedding_model: 'text-embedding-ada-002',
     is_active: true
   });
 
   const [editingCard, setEditingCard] = useState<DashboardCardConfig | null>(null);
+  const [availableAssistants, setAvailableAssistants] = useState<any[]>([]);
+  const [availableModels, setAvailableModels] = useState<any[]>([]);
+  const [loadingAssistants, setLoadingAssistants] = useState(false);
+  const [loadingModels, setLoadingModels] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [messageType, setMessageType] = useState<'success' | 'error'>('success');
 
   useEffect(() => {
     loadData();
@@ -75,6 +83,8 @@ export default function DashboardConfigPage() {
             assistant_id: openaiData.data.assistant_id || '',
             model: openaiData.data.model || 'gpt-4',
             system_prompt: openaiData.data.system_prompt || '',
+            rag_enabled: openaiData.data.rag_enabled || false,
+            embedding_model: openaiData.data.embedding_model || 'text-embedding-ada-002',
             is_active: openaiData.data.is_active !== false
           });
         }
@@ -85,6 +95,76 @@ export default function DashboardConfigPage() {
       console.error('Erro ao carregar dados:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Buscar assistants disponíveis
+  const loadAssistants = async () => {
+    if (!openaiForm.api_key) {
+      setError('Informe a API Key primeiro');
+      return;
+    }
+
+    try {
+      setLoadingAssistants(true);
+      const response = await fetch('/api/openai/assistants', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ api_key: openaiForm.api_key })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setAvailableAssistants(data.data || []);
+        setError(null);
+      } else {
+        const errorData = await response.json();
+        setError(errorData.message || 'Erro ao carregar assistants');
+        setAvailableAssistants([]);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar assistants:', error);
+      setError('Erro ao carregar assistants');
+      setAvailableAssistants([]);
+    } finally {
+      setLoadingAssistants(false);
+    }
+  };
+
+  // Buscar modelos disponíveis
+  const loadModels = async () => {
+    if (!openaiForm.api_key) {
+      setError('Informe a API Key primeiro');
+      return;
+    }
+
+    try {
+      setLoadingModels(true);
+      const response = await fetch('/api/openai/models', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ api_key: openaiForm.api_key })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setAvailableModels(data.data || []);
+        setError(null);
+      } else {
+        const errorData = await response.json();
+        setError(errorData.message || 'Erro ao carregar modelos');
+        setAvailableModels([]);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar modelos:', error);
+      setError('Erro ao carregar modelos');
+      setAvailableModels([]);
+    } finally {
+      setLoadingModels(false);
     }
   };
 
@@ -401,89 +481,164 @@ export default function DashboardConfigPage() {
               <h2 className="text-xl font-semibold mb-4">Configuração OpenAI</h2>
               
               <form onSubmit={handleOpenAISubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    API Key
-                  </label>
-                  <input
-                    type="password"
-                    value={openaiForm.api_key}
-                    onChange={(e) => setOpenaiForm(prev => ({ ...prev, api_key: e.target.value }))}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="sk-..."
-                    required
-                  />
-                </div>
+                            <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      API Key
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="password"
+                        value={openaiForm.api_key}
+                        onChange={(e) => setOpenaiForm({...openaiForm, api_key: e.target.value})}
+                        className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white"
+                        placeholder="sk-..."
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={loadAssistants}
+                        disabled={!openaiForm.api_key || loadingAssistants}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                      >
+                        {loadingAssistants ? 'Carregando...' : 'Buscar Assistants'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={loadModels}
+                        disabled={!openaiForm.api_key || loadingModels}
+                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                      >
+                        {loadingModels ? 'Carregando...' : 'Buscar Modelos'}
+                      </button>
+                    </div>
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Assistant ID (Opcional)
-                  </label>
-                  <input
-                    type="text"
-                    value={openaiForm.assistant_id}
-                    onChange={(e) => setOpenaiForm(prev => ({ ...prev, assistant_id: e.target.value }))}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="asst_..."
-                  />
-                  <p className="text-xs text-gray-400 mt-1">
-                    Se não informado, usará completion com RAG
-                  </p>
-                </div>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Assistant ID (Opcional)
+                    </label>
+                    {availableAssistants.length > 0 ? (
+                      <select
+                        value={openaiForm.assistant_id}
+                        onChange={(e) => setOpenaiForm({...openaiForm, assistant_id: e.target.value})}
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white"
+                      >
+                        <option value="">Selecione um assistant ou deixe vazio para usar completion</option>
+                        {availableAssistants.map((assistant) => (
+                          <option key={assistant.id} value={assistant.id}>
+                            {assistant.name} ({assistant.id})
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        value={openaiForm.assistant_id}
+                        onChange={(e) => setOpenaiForm({...openaiForm, assistant_id: e.target.value})}
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white"
+                        placeholder="asst_..."
+                      />
+                    )}
+                    <p className="text-sm text-gray-400 mt-1">
+                      Se não informado, usará completion com RAG
+                    </p>
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Modelo
-                  </label>
-                  <select
-                    value={openaiForm.model}
-                    onChange={(e) => setOpenaiForm(prev => ({ ...prev, model: e.target.value }))}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Modelo
+                    </label>
+                    {availableModels.length > 0 ? (
+                      <select
+                        value={openaiForm.model}
+                        onChange={(e) => setOpenaiForm({...openaiForm, model: e.target.value})}
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white"
+                      >
+                        {availableModels.map((model) => (
+                          <option key={model.id} value={model.id}>
+                            {model.name}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <select
+                        value={openaiForm.model}
+                        onChange={(e) => setOpenaiForm({...openaiForm, model: e.target.value})}
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white"
+                      >
+                        <option value="gpt-4">GPT-4</option>
+                        <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                        <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                      </select>
+                    )}
+                  </div>
+
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Prompt do Sistema (Para Completion)
+                    </label>
+                    <textarea
+                      value={openaiForm.system_prompt}
+                      onChange={(e) => setOpenaiForm({...openaiForm, system_prompt: e.target.value})}
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white h-32"
+                      placeholder="Você é um assistente especializado em CRM..."
+                    />
+                  </div>
+
+                  <div className="mb-4">
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={openaiForm.rag_enabled}
+                        onChange={(e) => setOpenaiForm({...openaiForm, rag_enabled: e.target.checked})}
+                        className="mr-2"
+                      />
+                      <span className="text-sm text-gray-300">Habilitar RAG/Embeddings</span>
+                    </label>
+                  </div>
+
+                  {openaiForm.rag_enabled && (
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Modelo de Embedding
+                      </label>
+                      <select
+                        value={openaiForm.embedding_model}
+                        onChange={(e) => setOpenaiForm({...openaiForm, embedding_model: e.target.value})}
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white"
+                      >
+                        <option value="text-embedding-ada-002">text-embedding-ada-002</option>
+                        <option value="text-embedding-3-small">text-embedding-3-small</option>
+                        <option value="text-embedding-3-large">text-embedding-3-large</option>
+                      </select>
+                    </div>
+                  )}
+
+                  <div className="mb-4">
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={openaiForm.is_active}
+                        onChange={(e) => setOpenaiForm({...openaiForm, is_active: e.target.checked})}
+                        className="mr-2"
+                      />
+                      <span className="text-sm text-gray-300">Ativo</span>
+                    </label>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50"
                   >
-                    <option value="gpt-4">GPT-4</option>
-                    <option value="gpt-4-turbo">GPT-4 Turbo</option>
-                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Prompt do Sistema (Para Completion)
-                  </label>
-                  <textarea
-                    value={openaiForm.system_prompt}
-                    onChange={(e) => setOpenaiForm(prev => ({ ...prev, system_prompt: e.target.value }))}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    rows={4}
-                    placeholder="Você é um assistente especializado em CRM..."
-                  />
-                </div>
-
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="openai_active"
-                    checked={openaiForm.is_active}
-                    onChange={(e) => setOpenaiForm(prev => ({ ...prev, is_active: e.target.checked }))}
-                    className="mr-2"
-                  />
-                  <label htmlFor="openai_active" className="text-sm text-gray-300">
-                    Ativo
-                  </label>
-                </div>
-
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                >
-                  Salvar Configuração
-                </button>
-              </form>
-            </div>
+                    {loading ? 'Salvando...' : 'Salvar Configuração'}
+                  </button>
+                </form>
+              </div>
+            )}
           </div>
-        )}
-      </div>
-    </DashboardLayout>
-  );
-}
+        </div>
+      </DashboardLayout>
+    );
+  }
 

@@ -49,14 +49,44 @@ const ChatInterface: React.FC = () => {
     setMessages(prev => [...prev, newUserMessage]);
     
     // Simular resposta do assistente (futuramente será integrado com backend)
-    setTimeout(() => {
-      const assistantMessage: Message = {
-        id: `msg-${Date.now()}-assistant`,
-        content: `Resposta simulada para: "${content}"`,
-        sender: 'assistant',
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, assistantMessage]);
+    setTimeout(async () => {
+      try {
+        // Chamar API real do OpenAI
+        const token = localStorage.getItem('authToken');
+        const response = await fetch('/api/openai/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ message: content })
+        });
+
+        let assistantContent = '';
+        if (response.ok) {
+          const data = await response.json();
+          assistantContent = data.response || 'Resposta não disponível';
+        } else {
+          assistantContent = `Resposta simulada para: "${content}"`;
+        }
+
+        const assistantMessage: Message = {
+          id: `msg-${Date.now()}-assistant`,
+          content: assistantContent,
+          sender: 'assistant',
+          timestamp: new Date(),
+        };
+        setMessages(prev => [...prev, assistantMessage]);
+      } catch (error) {
+        console.error('Erro ao enviar mensagem:', error);
+        const assistantMessage: Message = {
+          id: `msg-${Date.now()}-assistant`,
+          content: 'Erro ao processar mensagem. Verifique as configurações do OpenAI.',
+          sender: 'assistant',
+          timestamp: new Date(),
+        };
+        setMessages(prev => [...prev, assistantMessage]);
+      }
     }, 1000);
     
     // Não é mais a primeira interação
