@@ -13,15 +13,6 @@ interface DashboardCardConfig {
   is_active: boolean;
 }
 
-interface OpenAIConfig {
-  id?: number;
-  client_id: number;
-  api_key: string;
-  assistant_id?: string;
-  model: string;
-  system_prompt?: string;
-  is_active: boolean;
-}
 
 export default function DashboardConfigPage() {
   const [cardConfigs, setCardConfigs] = useState<DashboardCardConfig[]>([]);

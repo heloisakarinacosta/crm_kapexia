@@ -19,8 +19,8 @@ const IndicatorCardsSection: React.FC = () => {
   const [indicators, setIndicators] = useState<IndicatorData[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadCardData();
+  const getDefaultIndicators = useCallback((): IndicatorData[] => {
+    return [1, 2, 3].map(position => getDefaultIndicator(position));
   }, []);
 
   const loadCardData = useCallback(async () => {
@@ -72,7 +72,7 @@ const IndicatorCardsSection: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [getDefaultIndicators]);
 
   useEffect(() => {
     loadCardData();
@@ -112,10 +112,6 @@ const IndicatorCardsSection: React.FC = () => {
       }
     };
     return defaults[position as keyof typeof defaults];
-  };
-
-  const getDefaultIndicators = (): IndicatorData[] => {
-    return [1, 2, 3].map(position => getDefaultIndicator(position));
   };
 
   if (loading) {

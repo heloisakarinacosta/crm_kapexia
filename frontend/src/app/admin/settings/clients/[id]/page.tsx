@@ -39,13 +39,6 @@ export default function EditClientPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (clientId) {
-      loadClient();
-      loadUsers();
-    }
-  }, [clientId]);
-
   const loadClient = useCallback(async () => {
     try {
       const response = await fetch(`/api/clients/${clientId}`, {
