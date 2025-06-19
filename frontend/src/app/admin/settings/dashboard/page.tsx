@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import DashboardLayout from '../../../../components/layout/DashboardLayout';
 
 interface DashboardCardConfig {
@@ -12,7 +12,6 @@ interface DashboardCardConfig {
   icon: string;
   is_active: boolean;
 }
-
 
 export default function DashboardConfigPage() {
   const [cardConfigs, setCardConfigs] = useState<DashboardCardConfig[]>([]);
@@ -40,18 +39,12 @@ export default function DashboardConfigPage() {
   });
 
   const [editingCard, setEditingCard] = useState<DashboardCardConfig | null>(null);
-  const [availableAssistants, setAvailableAssistants] = useState<any[]>([]);
-  const [availableModels, setAvailableModels] = useState<any[]>([]);
+  const [availableAssistants, setAvailableAssistants] = useState<Array<{id: string, name?: string}>>([]);
+  const [availableModels, setAvailableModels] = useState<Array<{id: string}>>([]);
   const [loadingAssistants, setLoadingAssistants] = useState(false);
   const [loadingModels, setLoadingModels] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [messageType, setMessageType] = useState<'success' | 'error'>('success');
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('authToken');
@@ -96,7 +89,11 @@ export default function DashboardConfigPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   // Buscar assistants disponíveis
   const loadAssistants = async () => {
@@ -302,118 +299,126 @@ export default function DashboardConfigPage() {
         )}
 
         {/* Tabs */}
-        <div className="flex space-x-1 mb-6">
-          <button
-            onClick={() => setActiveTab('cards')}
-            className={`px-4 py-2 rounded-lg transition-colors ${
-              activeTab === 'cards'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-            }`}
-          >
-            Configuração de Cards
-          </button>
-          <button
-            onClick={() => setActiveTab('openai')}
-            className={`px-4 py-2 rounded-lg transition-colors ${
-              activeTab === 'openai'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-            }`}
-          >
-            Configuração OpenAI
-          </button>
+        <div className="mb-6">
+          <div className="border-b border-gray-700">
+            <nav className="-mb-px flex space-x-8">
+              <button
+                onClick={() => setActiveTab('cards')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'cards'
+                    ? 'border-blue-500 text-blue-400'
+                    : 'border-transparent text-gray-400 hover:text-gray-300'
+                }`}
+              >
+                Configuração de Cards
+              </button>
+              <button
+                onClick={() => setActiveTab('openai')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'openai'
+                    ? 'border-blue-500 text-blue-400'
+                    : 'border-transparent text-gray-400 hover:text-gray-300'
+                }`}
+              >
+                Configuração OpenAI
+              </button>
+            </nav>
+          </div>
         </div>
 
         {/* Tab Content */}
         {activeTab === 'cards' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Formulário de Card */}
+          <div className="space-y-6">
+            {/* Formulário de Cards */}
             <div className="bg-gray-800 rounded-lg p-6">
               <h2 className="text-xl font-semibold mb-4">
                 {editingCard ? 'Editar Card' : 'Novo Card'}
               </h2>
               
               <form onSubmit={handleCardSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Posição do Card
-                  </label>
-                  <select
-                    value={cardForm.card_position}
-                    onChange={(e) => setCardForm(prev => ({ ...prev, card_position: parseInt(e.target.value) }))}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value={1}>Card 1</option>
-                    <option value={2}>Card 2</option>
-                    <option value={3}>Card 3</option>
-                  </select>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Posição do Card
+                    </label>
+                    <select
+                      value={cardForm.card_position}
+                      onChange={(e) => setCardForm({...cardForm, card_position: parseInt(e.target.value)})}
+                      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
+                      required
+                    >
+                      <option value={1}>Card 1</option>
+                      <option value={2}>Card 2</option>
+                      <option value={3}>Card 3</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Título do Card
+                    </label>
+                    <input
+                      type="text"
+                      value={cardForm.card_title}
+                      onChange={(e) => setCardForm({...cardForm, card_title: e.target.value})}
+                      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
+                      required
+                    />
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Título do Card
-                  </label>
-                  <input
-                    type="text"
-                    value={cardForm.card_title}
-                    onChange={(e) => setCardForm(prev => ({ ...prev, card_title: e.target.value }))}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Ex: Novos Leads (Semana)"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Ícone
-                  </label>
-                  <input
-                    type="text"
-                    value={cardForm.icon}
-                    onChange={(e) => setCardForm(prev => ({ ...prev, icon: e.target.value }))}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="📊"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Query SQL
+                    Consulta SQL
                   </label>
                   <textarea
                     value={cardForm.sql_query}
-                    onChange={(e) => setCardForm(prev => ({ ...prev, sql_query: e.target.value }))}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onChange={(e) => setCardForm({...cardForm, sql_query: e.target.value})}
                     rows={6}
-                    placeholder="SELECT 'Novos Leads' as title, 42 as value, '12%' as percentual"
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white font-mono text-sm"
+                    placeholder="SELECT 'Título' as title, 1000 as value, 15.5 as percentage"
                     required
                   />
                   <p className="text-xs text-gray-400 mt-1">
-                    A query deve retornar: title, value, percentual
+                    A consulta deve retornar: title (título), value (valor), percentage (percentual)
                   </p>
                 </div>
 
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="card_active"
-                    checked={cardForm.is_active}
-                    onChange={(e) => setCardForm(prev => ({ ...prev, is_active: e.target.checked }))}
-                    className="mr-2"
-                  />
-                  <label htmlFor="card_active" className="text-sm text-gray-300">
-                    Ativo
-                  </label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Ícone
+                    </label>
+                    <input
+                      type="text"
+                      value={cardForm.icon}
+                      onChange={(e) => setCardForm({...cardForm, icon: e.target.value})}
+                      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
+                      placeholder="📊"
+                    />
+                  </div>
+
+                  <div className="flex items-center">
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={cardForm.is_active}
+                        onChange={(e) => setCardForm({...cardForm, is_active: e.target.checked})}
+                        className="mr-2"
+                      />
+                      <span className="text-sm text-gray-300">Ativo</span>
+                    </label>
+                  </div>
                 </div>
 
-                <div className="flex space-x-3">
+                <div className="flex gap-2">
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                    className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
                   >
-                    {editingCard ? 'Atualizar' : 'Criar'}
+                    {editingCard ? 'Atualizar' : 'Criar'} Card
                   </button>
+                  
                   {editingCard && (
                     <button
                       type="button"
@@ -421,7 +426,7 @@ export default function DashboardConfigPage() {
                         setEditingCard(null);
                         resetCardForm();
                       }}
-                      className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+                      className="bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-700"
                     >
                       Cancelar
                     </button>
@@ -434,211 +439,213 @@ export default function DashboardConfigPage() {
             <div className="bg-gray-800 rounded-lg p-6">
               <h2 className="text-xl font-semibold mb-4">Cards Configurados</h2>
               
-              <div className="space-y-3">
-                {cardConfigs.map(card => (
-                  <div key={card.id} className="bg-gray-700 rounded-lg p-4">
-                    <div className="flex justify-between items-start">
+              {cardConfigs.length === 0 ? (
+                <p className="text-gray-400">Nenhum card configurado ainda.</p>
+              ) : (
+                <div className="space-y-3">
+                  {cardConfigs.map((card) => (
+                    <div key={card.id} className="bg-gray-700 rounded-lg p-4 flex justify-between items-center">
                       <div>
-                        <h3 className="font-medium text-white">
-                          {card.icon} {card.card_title}
+                        <h3 className="font-medium">
+                          {card.icon} Card {card.card_position}: {card.card_title}
                         </h3>
-                        <p className="text-sm text-gray-400">Posição: {card.card_position}</p>
-                        <p className="text-xs text-gray-500 mt-1 truncate">
-                          {card.sql_query.substring(0, 50)}...
+                        <p className="text-sm text-gray-400 mt-1">
+                          Status: {card.is_active ? 'Ativo' : 'Inativo'}
                         </p>
                       </div>
-                      <div className="flex space-x-2">
+                      <div className="flex gap-2">
                         <button
                           onClick={() => editCard(card)}
-                          className="text-blue-400 hover:text-blue-300 text-sm"
+                          className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
                         >
                           Editar
                         </button>
                         <button
                           onClick={() => deleteCard(card.id)}
-                          className="text-red-400 hover:text-red-300 text-sm"
+                          className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
                         >
                           Excluir
                         </button>
                       </div>
                     </div>
-                  </div>
-                ))}
-                
-                {cardConfigs.length === 0 && (
-                  <p className="text-gray-400 text-center py-4">
-                    Nenhum card configurado
-                  </p>
-                )}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
 
         {activeTab === 'openai' && (
-          <div className="max-w-2xl">
-            <div className="bg-gray-800 rounded-lg p-6">
-              <h2 className="text-xl font-semibold mb-4">Configuração OpenAI</h2>
-              
-              <form onSubmit={handleOpenAISubmit} className="space-y-4">
-                            <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      API Key
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="password"
-                        value={openaiForm.api_key}
-                        onChange={(e) => setOpenaiForm({...openaiForm, api_key: e.target.value})}
-                        className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white"
-                        placeholder="sk-..."
-                        required
-                      />
-                      <button
-                        type="button"
-                        onClick={loadAssistants}
-                        disabled={!openaiForm.api_key || loadingAssistants}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-                      >
-                        {loadingAssistants ? 'Carregando...' : 'Buscar Assistants'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={loadModels}
-                        disabled={!openaiForm.api_key || loadingModels}
-                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
-                      >
-                        {loadingModels ? 'Carregando...' : 'Buscar Modelos'}
-                      </button>
-                    </div>
-                  </div>
+          <div className="bg-gray-800 rounded-lg p-6">
+            <h2 className="text-xl font-semibold mb-4">Configuração OpenAI</h2>
+            
+            <form onSubmit={handleOpenAISubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  API Key OpenAI
+                </label>
+                <input
+                  type="password"
+                  value={openaiForm.api_key}
+                  onChange={(e) => setOpenaiForm({...openaiForm, api_key: e.target.value})}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
+                  placeholder="sk-..."
+                  required
+                />
+              </div>
 
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Assistant ID (Opcional)
-                    </label>
-                    {availableAssistants.length > 0 ? (
-                      <select
-                        value={openaiForm.assistant_id}
-                        onChange={(e) => setOpenaiForm({...openaiForm, assistant_id: e.target.value})}
-                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white"
-                      >
-                        <option value="">Selecione um assistant ou deixe vazio para usar completion</option>
-                        {availableAssistants.map((assistant) => (
-                          <option key={assistant.id} value={assistant.id}>
-                            {assistant.name} ({assistant.id})
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <input
-                        type="text"
-                        value={openaiForm.assistant_id}
-                        onChange={(e) => setOpenaiForm({...openaiForm, assistant_id: e.target.value})}
-                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white"
-                        placeholder="asst_..."
-                      />
-                    )}
-                    <p className="text-sm text-gray-400 mt-1">
-                      Se não informado, usará completion com RAG
-                    </p>
-                  </div>
+              {/* Assistants */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <label className="block text-sm font-medium text-gray-300">
+                    Assistant ID (opcional)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={loadAssistants}
+                    disabled={loadingAssistants || !openaiForm.api_key}
+                    className="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700 disabled:opacity-50"
+                  >
+                    {loadingAssistants ? 'Carregando...' : 'Buscar Assistants'}
+                  </button>
+                </div>
+                
+                {availableAssistants.length > 0 ? (
+                  <select
+                    value={openaiForm.assistant_id}
+                    onChange={(e) => setOpenaiForm({...openaiForm, assistant_id: e.target.value})}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white mb-2"
+                  >
+                    <option value="">Selecione um assistant</option>
+                    {availableAssistants.map((assistant) => (
+                      <option key={assistant.id} value={assistant.id}>
+                        {assistant.name || assistant.id}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    value={openaiForm.assistant_id}
+                    onChange={(e) => setOpenaiForm({...openaiForm, assistant_id: e.target.value})}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
+                    placeholder="asst_..."
+                  />
+                )}
+                <p className="text-xs text-gray-400">
+                  Se não informado, usará completion com prompt
+                </p>
+              </div>
 
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Modelo
-                    </label>
-                    {availableModels.length > 0 ? (
-                      <select
-                        value={openaiForm.model}
-                        onChange={(e) => setOpenaiForm({...openaiForm, model: e.target.value})}
-                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white"
-                      >
-                        {availableModels.map((model) => (
-                          <option key={model.id} value={model.id}>
-                            {model.name}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <select
-                        value={openaiForm.model}
-                        onChange={(e) => setOpenaiForm({...openaiForm, model: e.target.value})}
-                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white"
-                      >
-                        <option value="gpt-4">GPT-4</option>
-                        <option value="gpt-4-turbo">GPT-4 Turbo</option>
-                        <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                      </select>
-                    )}
-                  </div>
+              {/* Modelos */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <label className="block text-sm font-medium text-gray-300">
+                    Modelo (para completion)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={loadModels}
+                    disabled={loadingModels || !openaiForm.api_key}
+                    className="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700 disabled:opacity-50"
+                  >
+                    {loadingModels ? 'Carregando...' : 'Buscar Modelos'}
+                  </button>
+                </div>
+                
+                {availableModels.length > 0 ? (
+                  <select
+                    value={openaiForm.model}
+                    onChange={(e) => setOpenaiForm({...openaiForm, model: e.target.value})}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
+                  >
+                    {availableModels.map((model) => (
+                      <option key={model.id} value={model.id}>
+                        {model.id}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <select
+                    value={openaiForm.model}
+                    onChange={(e) => setOpenaiForm({...openaiForm, model: e.target.value})}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
+                  >
+                    <option value="gpt-4">gpt-4</option>
+                    <option value="gpt-4-turbo">gpt-4-turbo</option>
+                    <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
+                  </select>
+                )}
+              </div>
 
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Prompt do Sistema (Para Completion)
-                    </label>
-                    <textarea
-                      value={openaiForm.system_prompt}
-                      onChange={(e) => setOpenaiForm({...openaiForm, system_prompt: e.target.value})}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white h-32"
-                      placeholder="Você é um assistente especializado em CRM..."
-                    />
-                  </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  System Prompt (para completion)
+                </label>
+                <textarea
+                  value={openaiForm.system_prompt}
+                  onChange={(e) => setOpenaiForm({...openaiForm, system_prompt: e.target.value})}
+                  rows={4}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
+                  placeholder="Você é um assistente especializado em CRM..."
+                />
+              </div>
 
-                  <div className="mb-4">
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={openaiForm.rag_enabled}
-                        onChange={(e) => setOpenaiForm({...openaiForm, rag_enabled: e.target.checked})}
-                        className="mr-2"
-                      />
-                      <span className="text-sm text-gray-300">Habilitar RAG/Embeddings</span>
-                    </label>
-                  </div>
+              {/* RAG Configuration */}
+              <div>
+                <label className="flex items-center mb-2">
+                  <input
+                    type="checkbox"
+                    checked={openaiForm.rag_enabled}
+                    onChange={(e) => setOpenaiForm({...openaiForm, rag_enabled: e.target.checked})}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-300">Habilitar RAG (Retrieval Augmented Generation)</span>
+                </label>
 
-                  {openaiForm.rag_enabled && (
-                    <div className="mb-4">
+                {openaiForm.rag_enabled && (
+                  <div className="ml-6 space-y-3">
+                    <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">
                         Modelo de Embedding
                       </label>
                       <select
                         value={openaiForm.embedding_model}
                         onChange={(e) => setOpenaiForm({...openaiForm, embedding_model: e.target.value})}
-                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white"
+                        className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
                       >
                         <option value="text-embedding-ada-002">text-embedding-ada-002</option>
                         <option value="text-embedding-3-small">text-embedding-3-small</option>
                         <option value="text-embedding-3-large">text-embedding-3-large</option>
                       </select>
                     </div>
-                  )}
-
-                  <div className="mb-4">
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={openaiForm.is_active}
-                        onChange={(e) => setOpenaiForm({...openaiForm, is_active: e.target.checked})}
-                        className="mr-2"
-                      />
-                      <span className="text-sm text-gray-300">Ativo</span>
-                    </label>
                   </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    {loading ? 'Salvando...' : 'Salvar Configuração'}
-                  </button>
-                </form>
+                )}
               </div>
-            )}
-          </div>
-        </div>
-      </DashboardLayout>
-    );
-  }
 
+              <div>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={openaiForm.is_active}
+                    onChange={(e) => setOpenaiForm({...openaiForm, is_active: e.target.checked})}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-300">Ativo</span>
+                </label>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              >
+                {loading ? 'Salvando...' : 'Salvar Configuração'}
+              </button>
+            </form>
+          </div>
+        )}
+      </div>
+    </DashboardLayout>
+  );
+}
