@@ -50,9 +50,7 @@ app.get("/", (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/clients', clientRoutes);
-app.use('/api/database-configs', databaseConfigRoutes);
 app.use('/api/chart-configs', chartConfigRoutes);
-app.use('/api/analytics', analyticsRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/openai', openaiRoutes);
 app.use('/api/rag', ragRoutes);
