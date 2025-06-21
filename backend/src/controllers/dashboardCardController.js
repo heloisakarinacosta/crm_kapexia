@@ -60,6 +60,15 @@ const DashboardCardController = {
   // Criar nova configuração de card
   async createCard(req, res) {
     try {
+      const clientId = req.user.client_id;
+      
+      if (!clientId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Cliente não associado ao usuário'
+        });
+      }
+
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({
@@ -70,7 +79,7 @@ const DashboardCardController = {
       }
 
       const configData = {
-        client_id: req.body.client_id,
+        client_id: clientId,
         card_position: req.body.card_position,
         card_title: req.body.card_title,
         sql_query: req.body.sql_query,

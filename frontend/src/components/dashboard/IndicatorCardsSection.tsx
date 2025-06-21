@@ -51,8 +51,8 @@ const IndicatorCardsSection: React.FC = () => {
               value: data.data.value,
               icon: getIconForPosition(position),
               trend: {
-                value: data.data.percentual,
-                isPositive: !data.data.percentual.includes('-')
+                value: data.data.percentual ? `${data.data.percentual}%` : '0%',
+                isPositive: data.data.percentual ? parseFloat(data.data.percentual.toString()) >= 0 : true
               }
             };
           } else {

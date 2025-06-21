@@ -26,6 +26,9 @@ const ChatInterface: React.FC = () => {
   // Estado para controlar se é a primeira interação (mostrar boas-vindas e sugestões)
   const [isFirstInteraction, setIsFirstInteraction] = useState(true);
   
+  // Estado para gerenciar o thread ID da conversa
+  const [threadId, setThreadId] = useState<string | null>(null);
+  
   // Sugestões pré-definidas - futuramente virão de configuração/API
   const suggestions: SuggestionItem[] = [
     { id: 'leads-week', text: 'Quantos leads entraram essa semana?', icon: '👥' },
@@ -53,21 +56,46 @@ const ChatInterface: React.FC = () => {
       try {
         // Chamar API real do OpenAI
         const token = localStorage.getItem('authToken');
+        const requestBody: { message: string; threadId?: string } = { message: content };
+        if (threadId && threadId !== 'undefined') {
+          requestBody.threadId = threadId;
+        }
+        
+        console.log('[DEBUG Frontend] Enviando:', requestBody);
+        
         const response = await fetch('/api/openai/chat', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
-          body: JSON.stringify({ message: content })
+          body: JSON.stringify(requestBody)
         });
 
         let assistantContent = '';
         if (response.ok) {
           const data = await response.json();
-          assistantContent = data.response || 'Resposta não disponível';
+          console.log('[DEBUG Frontend] Resposta recebida:', data);
+          
+          // Verificar se a resposta tem o formato esperado
+          if (data.success && data.data) {
+            // Formato padrão do backend
+            assistantContent = data.data.message || 'Resposta não disponível';
+            
+            // Atualizar threadId se retornado
+            if (data.data.threadId && !threadId) {
+              setThreadId(data.data.threadId);
+            }
+          } else if (data.response) {
+            // Formato JSON direto com campo "response"
+            assistantContent = data.response;
+          } else {
+            // Fallback
+            assistantContent = data.message || data.data?.message || 'Resposta não disponível';
+          }
         } else {
-          assistantContent = `Resposta simulada para: "${content}"`;
+          const errorData = await response.json();
+          assistantContent = errorData.message || `Erro: ${response.status}`;
         }
 
         const assistantMessage: Message = {

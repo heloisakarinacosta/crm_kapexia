@@ -25,6 +25,12 @@ export default function SettingsPage() {
               <p className="text-gray-400">Personalize os gráficos de análise para cada cliente.</p>
             </div>
           </Link>
+          <Link href="/admin/settings/dashboard">
+            <div className="p-6 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors duration-200">
+              <h2 className="text-xl font-bold mb-2">Configurações Dashboard</h2>
+              <p className="text-gray-400">Configuração Cards e Openai</p>
+            </div>
+          </Link>
           {/* Adicionar mais links de configuração aqui conforme necessário */}
         </div>
       </div>

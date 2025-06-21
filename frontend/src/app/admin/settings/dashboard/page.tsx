@@ -18,6 +18,7 @@ export default function DashboardConfigPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'cards' | 'openai'>('cards');
+  const [clientInfo, setClientInfo] = useState<{id: number, name: string} | null>(null);
 
   // Estados para formulários
   const [cardForm, setCardForm] = useState({
@@ -37,6 +38,10 @@ export default function DashboardConfigPage() {
     embedding_model: 'text-embedding-ada-002',
     is_active: true
   });
+
+  const [hasExistingConfig, setHasExistingConfig] = useState(false);
+  const [originalApiKey, setOriginalApiKey] = useState('');
+  const [hasValidApiKey, setHasValidApiKey] = useState(false);
 
   const [editingCard, setEditingCard] = useState<DashboardCardConfig | null>(null);
   const [availableAssistants, setAvailableAssistants] = useState<Array<{id: string, name?: string}>>([]);
@@ -59,6 +64,22 @@ export default function DashboardConfigPage() {
         'Content-Type': 'application/json'
       };
 
+      // Carregar informações do usuário para obter dados do cliente
+      try {
+        const userResponse = await fetch('/api/auth/me', { headers });
+        if (userResponse.ok) {
+          const userData = await userResponse.json();
+          if (userData.user && userData.user.client) {
+            setClientInfo({
+              id: userData.user.client.id,
+              name: userData.user.client.name
+            });
+          }
+        }
+      } catch {
+        console.log('Informações do cliente não disponíveis');
+      }
+
       // Carregar configurações de cards
       const cardResponse = await fetch('/api/dashboard/cards', { headers });
       if (cardResponse.ok) {
@@ -70,17 +91,31 @@ export default function DashboardConfigPage() {
       const openaiResponse = await fetch('/api/openai', { headers });
       if (openaiResponse.ok) {
         const openaiData = await openaiResponse.json();
-        if (openaiData.data) {
+        console.log('[DEBUG Frontend] Dados OpenAI recebidos:', openaiData);
+        
+        if (openaiData.success && openaiData.data) {
+          console.log('[DEBUG Frontend] Configurando formulário com:', openaiData.data);
+          setHasExistingConfig(true);
+          setOriginalApiKey(openaiData.data.api_key || '');
+          setHasValidApiKey(openaiData.data.has_api_key || false);
+          
           setOpenaiForm({
             api_key: openaiData.data.api_key || '',
             assistant_id: openaiData.data.assistant_id || '',
             model: openaiData.data.model || 'gpt-4',
             system_prompt: openaiData.data.system_prompt || '',
-            rag_enabled: openaiData.data.rag_enabled || false,
+            rag_enabled: Boolean(openaiData.data.rag_enabled),
             embedding_model: openaiData.data.embedding_model || 'text-embedding-ada-002',
-            is_active: openaiData.data.is_active !== false
+            is_active: Boolean(openaiData.data.is_active)
           });
+        } else {
+          console.log('[DEBUG Frontend] Nenhuma configuração OpenAI encontrada');
+          setHasExistingConfig(false);
+          setOriginalApiKey('');
+          setHasValidApiKey(false);
         }
+      } else {
+        console.log('[DEBUG Frontend] Erro ao carregar configuração OpenAI:', openaiResponse.status);
       }
 
     } catch (err) {
@@ -97,19 +132,24 @@ export default function DashboardConfigPage() {
 
   // Buscar assistants disponíveis
   const loadAssistants = async () => {
-    if (!openaiForm.api_key) {
-      setError('Informe a API Key primeiro');
+    // Verificar se temos uma API Key válida (nova ou salva no banco)
+    const hasNewApiKey = openaiForm.api_key && !openaiForm.api_key.includes('...');
+    
+    if (!hasNewApiKey && !hasValidApiKey) {
+      setError('Informe a API Key completa primeiro ou salve uma nova configuração');
       return;
     }
 
     try {
       setLoadingAssistants(true);
+      const token = localStorage.getItem('authToken');
       const response = await fetch('/api/openai/assistants', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ api_key: openaiForm.api_key })
+        body: JSON.stringify({ api_key: hasNewApiKey ? openaiForm.api_key : null })
       });
 
       if (response.ok) {
@@ -132,19 +172,24 @@ export default function DashboardConfigPage() {
 
   // Buscar modelos disponíveis
   const loadModels = async () => {
-    if (!openaiForm.api_key) {
-      setError('Informe a API Key primeiro');
+    // Verificar se temos uma API Key válida (nova ou salva no banco)
+    const hasNewApiKey = openaiForm.api_key && !openaiForm.api_key.includes('...');
+    
+    if (!hasNewApiKey && !hasValidApiKey) {
+      setError('Informe a API Key completa primeiro ou salve uma nova configuração');
       return;
     }
 
     try {
       setLoadingModels(true);
+      const token = localStorage.getItem('authToken');
       const response = await fetch('/api/openai/models', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ api_key: openaiForm.api_key })
+        body: JSON.stringify({ api_key: hasNewApiKey ? openaiForm.api_key : null })
       });
 
       if (response.ok) {
@@ -201,6 +246,16 @@ export default function DashboardConfigPage() {
     
     try {
       const token = localStorage.getItem('authToken');
+      
+      // Preparar dados para envio
+      const submitData = { ...openaiForm };
+      
+      // Se existe configuração e a API key não foi alterada (ainda está mascarada), limpar o campo
+      if (hasExistingConfig && openaiForm.api_key === originalApiKey && originalApiKey.includes('...')) {
+        submitData.api_key = '';
+      }
+
+      console.log('[DEBUG Frontend] Enviando dados:', submitData);
 
       const response = await fetch('/api/openai', {
         method: 'POST',
@@ -208,7 +263,7 @@ export default function DashboardConfigPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(openaiForm)
+        body: JSON.stringify(submitData)
       });
 
       if (response.ok) {
@@ -290,6 +345,17 @@ export default function DashboardConfigPage() {
         <div className="mb-6">
           <h1 className="text-3xl font-montserrat font-light">CONFIGURAÇÕES DO DASHBOARD</h1>
           <p className="text-gray-400 mt-2">Configure os cards e chat do dashboard</p>
+          {clientInfo && (
+            <div className="mt-4 bg-blue-900/30 border border-blue-500/50 rounded-lg p-3">
+              <p className="text-blue-300 text-sm">
+                <span className="font-medium">Cliente:</span> {clientInfo.name}
+                <span className="text-blue-400 ml-2">(ID: {clientInfo.id})</span>
+              </p>
+              <p className="text-blue-400 text-xs mt-1">
+                Todas as configurações abaixo são específicas para este cliente
+              </p>
+            </div>
+          )}
         </div>
 
         {error && (
@@ -483,15 +549,23 @@ export default function DashboardConfigPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   API Key OpenAI
+                  {hasExistingConfig && originalApiKey.includes('...') && (
+                    <span className="ml-2 text-xs text-green-400">(Configuração existente)</span>
+                  )}
                 </label>
                 <input
                   type="password"
                   value={openaiForm.api_key}
                   onChange={(e) => setOpenaiForm({...openaiForm, api_key: e.target.value})}
                   className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white"
-                  placeholder="sk-..."
-                  required
+                  placeholder={hasExistingConfig ? "Deixe em branco para manter a atual" : "sk-..."}
+                  required={!hasExistingConfig}
                 />
+                {hasExistingConfig && originalApiKey.includes('...') && (
+                  <p className="text-xs text-gray-400 mt-1">
+                    API Key atual: {originalApiKey} - Preencha apenas se quiser alterar
+                  </p>
+                )}
               </div>
 
               {/* Assistants */}

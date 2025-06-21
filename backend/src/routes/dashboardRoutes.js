@@ -16,7 +16,6 @@ router.get('/cards/:position/data', DashboardCardController.getCardData);
 
 // Criar nova configuração de card
 router.post('/cards', [
-  body('client_id').isNumeric().withMessage('ID do cliente inválido'),
   body('card_position').isInt({ min: 1, max: 3 }).withMessage('Posição do card deve ser 1, 2 ou 3'),
   body('card_title').notEmpty().withMessage('Título do card é obrigatório'),
   body('sql_query').notEmpty().withMessage('Query SQL é obrigatória')

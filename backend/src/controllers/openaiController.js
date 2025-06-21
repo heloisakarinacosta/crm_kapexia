@@ -17,14 +17,28 @@ const OpenAIController = {
 
       const config = await OpenAIConfig.findByClientId(clientId);
       
-      // Não retornar a API key completa por segurança
-      if (config && config.api_key) {
-        config.api_key = config.api_key.substring(0, 10) + '...';
+      console.log('[DEBUG] Config do banco:', config);
+      
+      // Não retornar a API key completa por segurança, mas manter uma versão mascarada
+      let maskedConfig = null;
+      if (config) {
+        maskedConfig = { ...config };
+        if (maskedConfig.api_key) {
+          maskedConfig.api_key = maskedConfig.api_key.substring(0, 10) + '...';
+        }
+        // Converter valores numéricos para boolean
+        maskedConfig.rag_enabled = !!maskedConfig.rag_enabled;
+        maskedConfig.is_active = !!maskedConfig.is_active;
+        
+        // Adicionar flag indicando que existe uma API Key válida
+        maskedConfig.has_api_key = !!(config.api_key && config.api_key.trim() !== '');
       }
+      
+      console.log('[DEBUG] Config mascarado:', maskedConfig);
       
       res.json({
         success: true,
-        data: config
+        data: maskedConfig
       });
     } catch (error) {
       console.error('Erro ao buscar configuração OpenAI:', error);
@@ -56,22 +70,34 @@ const OpenAIController = {
         });
       }
 
+      // Verificar se já existe configuração
+      const existingConfig = await OpenAIConfig.findByClientId(clientId);
+      
       const configData = {
-        api_key: req.body.api_key,
         assistant_id: req.body.assistant_id,
         model: req.body.model,
         system_prompt: req.body.system_prompt,
         is_active: req.body.is_active
       };
 
-      // Verificar se já existe configuração
-      const existingConfig = await OpenAIConfig.findByClientId(clientId);
+      // Só incluir API key se foi fornecida e não está vazia
+      if (req.body.api_key && req.body.api_key.trim() !== '') {
+        configData.api_key = req.body.api_key;
+      }
       
       let result;
       if (existingConfig) {
         result = await OpenAIConfig.update(clientId, configData);
       } else {
+        // Para criar nova configuração, API key é obrigatória
+        if (!req.body.api_key) {
+          return res.status(400).json({
+            success: false,
+            message: 'API Key é obrigatória para nova configuração'
+          });
+        }
         configData.client_id = clientId;
+        configData.api_key = req.body.api_key;
         result = await OpenAIConfig.create(configData);
       }
       
@@ -119,7 +145,16 @@ const OpenAIController = {
   // Listar assistants disponíveis
   async listAssistants(req, res) {
     try {
-      const { api_key } = req.body;
+      let { api_key } = req.body;
+      const clientId = req.user.client_id;
+
+      // Se não foi fornecida API Key, tentar usar a do banco
+      if (!api_key && clientId) {
+        const config = await OpenAIConfig.findByClientId(clientId);
+        if (config && config.api_key) {
+          api_key = config.api_key;
+        }
+      }
 
       if (!api_key) {
         return res.status(400).json({
@@ -153,7 +188,16 @@ const OpenAIController = {
   // Listar modelos disponíveis
   async listModels(req, res) {
     try {
-      const { api_key } = req.body;
+      let { api_key } = req.body;
+      const clientId = req.user.client_id;
+
+      // Se não foi fornecida API Key, tentar usar a do banco
+      if (!api_key && clientId) {
+        const config = await OpenAIConfig.findByClientId(clientId);
+        if (config && config.api_key) {
+          api_key = config.api_key;
+        }
+      }
 
       if (!api_key) {
         return res.status(400).json({
@@ -189,6 +233,8 @@ const OpenAIController = {
     try {
       const clientId = req.user.client_id;
       const { message, threadId } = req.body;
+
+      console.log('[DEBUG] Chat request:', { clientId, message, threadId, threadIdType: typeof threadId });
 
       if (!clientId) {
         return res.status(400).json({

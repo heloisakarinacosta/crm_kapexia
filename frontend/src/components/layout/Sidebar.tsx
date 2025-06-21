@@ -33,8 +33,9 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, toggleSidebar }) => {
   // Itens do submenu de configurações
   const settingsSubItems = [
     { id: 'clients', name: 'Clientes', icon: '👥', path: '/admin/settings/clients' },
-    { id: 'chart-configs', name: 'Configuração de Gráficos', icon: '📊', path: '/admin/settings/chart-configs' },
-    { id: 'dashboard-config', name: 'Config Dashboard', icon: '🔧', path: '/admin/settings/dashboard' },
+    { id: 'chart-configs', name: 'Configuração Análises', icon: '📊', path: '/admin/settings/chart-configs' },
+    { id: 'dashboard-config', name: 'Configuração Leads', icon: '👥', path: '/admin/settings/leads' },
+    { id: 'dashboard-config', name: 'Configuração Dashboard', icon: '🏠', path: '/admin/settings/dashboard' },
   ];
 
   return (

@@ -27,7 +27,7 @@ router.post('/assistants', OpenAIController.listAssistants);
 router.post('/models', OpenAIController.listModels);
 
 // Enviar mensagem para chat
-router.post('/chat', authMiddleware, OpenAIController.sendMessage);
+router.post('/chat', OpenAIController.sendMessage);
 
 module.exports = router;
 

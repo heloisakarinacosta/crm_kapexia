@@ -1,6 +1,6 @@
 const express = require("express");
 const authController = require("../controllers/authController");
-// const { verifyToken } = require('../middleware/authMiddleware'); // Placeholder for token verification middleware
+const authMiddleware = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
@@ -14,8 +14,10 @@ router.post("/login", authController.login);
 // @access  Restricted
 router.post("/register-admin", authController.registerAdmin);
 
-// Example of a protected route that would require token verification
-// router.get("/profile", verifyToken, authController.getProfile);
+// @route   GET api/auth/me
+// @desc    Get current user information with client data
+// @access  Private
+router.get("/me", authMiddleware, authController.getMe);
 
 module.exports = router;
 

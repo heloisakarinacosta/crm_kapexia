@@ -72,16 +72,26 @@ const OpenAIService = {
   // Enviar mensagem para assistant
   async sendToAssistant(apiKey, assistantId, message, threadId = null) {
     try {
+      console.log('[DEBUG] sendToAssistant:', { assistantId, message, threadId, threadIdType: typeof threadId });
+      
       const openai = new OpenAI({
         apiKey: apiKey
       });
 
       // Criar ou usar thread existente
       let thread;
-      if (threadId) {
+      if (threadId && typeof threadId === 'string' && threadId !== 'undefined' && threadId.trim() !== '') {
+        console.log('[DEBUG] Usando thread existente:', threadId);
         thread = await openai.beta.threads.retrieve(threadId);
       } else {
+        console.log('[DEBUG] Criando novo thread');
         thread = await openai.beta.threads.create();
+      }
+
+      console.log('[DEBUG] Thread criado/recuperado:', { threadId: thread?.id, hasThread: !!thread });
+
+      if (!thread || !thread.id) {
+        throw new Error('Falha ao criar ou recuperar thread');
       }
 
       // Adicionar mensagem ao thread
@@ -95,23 +105,61 @@ const OpenAIService = {
         assistant_id: assistantId
       });
 
-      // Aguardar conclusão
-      let runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
-      
-      while (runStatus.status === 'in_progress' || runStatus.status === 'queued') {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
+      console.log('[DEBUG] Run criado:', { runId: run?.id, threadId: thread.id });
+
+      if (!run || !run.id) {
+        throw new Error('Falha ao criar run');
       }
+
+      console.log('[DEBUG] Antes de retrieve:', { threadId: thread.id, runId: run.id, threadIdType: typeof thread.id, runIdType: typeof run.id });
+
+      // Aguardar conclusão com timeout
+      let runStatus;
+      let attempts = 0;
+      const maxAttempts = 60; // 60 seconds timeout
+      
+      do {
+        try {
+          console.log('[DEBUG] Tentativa de retrieve:', attempts + 1);
+          const threadIdToUse = thread.id;
+          const runIdToUse = run.id;
+          console.log('[DEBUG] IDs para usar:', { threadIdToUse, runIdToUse });
+          
+          runStatus = await openai.beta.threads.runs.retrieve(threadIdToUse, runIdToUse);
+          console.log('[DEBUG] Status do run:', runStatus.status);
+          
+          if (runStatus.status === 'in_progress' || runStatus.status === 'queued') {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            attempts++;
+          }
+        } catch (error) {
+          console.error('[DEBUG] Erro no retrieve:', error.message);
+          throw error;
+        }
+      } while ((runStatus.status === 'in_progress' || runStatus.status === 'queued') && attempts < maxAttempts);
 
       if (runStatus.status === 'completed') {
         // Obter mensagens do thread
         const messages = await openai.beta.threads.messages.list(thread.id);
         const lastMessage = messages.data[0];
+        
+        let responseText = lastMessage.content[0].text.value;
+        
+        // Tentar fazer parse do JSON se a resposta parecer ser um JSON
+        try {
+          const jsonResponse = JSON.parse(responseText);
+          if (jsonResponse.response) {
+            responseText = jsonResponse.response;
+          }
+        } catch (e) {
+          // Se não for JSON válido, usar a resposta como está
+          console.log('[DEBUG] Resposta não é JSON válido, usando como texto simples');
+        }
 
         return {
           success: true,
           data: {
-            message: lastMessage.content[0].text.value,
+            message: responseText,
             threadId: thread.id
           }
         };

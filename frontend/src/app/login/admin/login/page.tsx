@@ -61,7 +61,7 @@ export default function LoginPage() {
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="p-8 bg-white shadow-md rounded-lg w-full max-w-md">
         <h1 className="text-2xl font-bold text-center mb-2">Admin Login</h1>
-        <p className="text-center text-gray-600 mb-6">KapexiaCore CRM</p>
+        <p className="text-center text-gray-600 mb-6">Kapexia CRM</p>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="username" className="block text-sm font-medium text-gray-700">Username</label>

@@ -29,14 +29,25 @@ const DashboardCardConfig = {
       is_active 
     } = configData;
     
+    const processedIcon = icon || '📊';
+    const processedIsActive = is_active !== undefined ? is_active : true;
+    
     const [result] = await pool.execute(
       `INSERT INTO dashboard_card_configs 
        (client_id, card_position, card_title, sql_query, icon, is_active) 
        VALUES (?, ?, ?, ?, ?, ?)`,
-      [client_id, card_position, card_title, sql_query, icon || '📊', is_active !== undefined ? is_active : true]
+      [client_id, card_position, card_title, sql_query, processedIcon, processedIsActive]
     );
     
-    return { id: result.insertId, ...configData };
+    return { 
+      id: result.insertId, 
+      client_id,
+      card_position,
+      card_title,
+      sql_query,
+      icon: processedIcon,
+      is_active: processedIsActive
+    };
   },
 
   async update(id, configData) {
@@ -90,7 +101,13 @@ const DashboardCardConfig = {
       const [dataRows] = await pool.execute(sqlQuery);
       
       if (dataRows.length > 0) {
-        return dataRows[0];
+        const result = dataRows[0];
+        // Mapear campos para padronizar nomes
+        return {
+          title: result.titulo || result.title,
+          value: result.valor || result.value,
+          percentual: result.percentual
+        };
       } else {
         return this.getDefaultCardData(cardPosition);
       }
