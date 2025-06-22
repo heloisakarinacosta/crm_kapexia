@@ -122,7 +122,7 @@ const OpenAIService = {
               // Executar chamada na API interna
               const args = JSON.parse(toolCall.function.arguments);
               const fetch = require('node-fetch');
-              let url = `http://localhost:3000/api/contatos/conversas?period=${args.period}`;
+              let url = `http://localhost:3002/api/contatos/conversas?period=${args.period}`;
               if (args.period === 'range' && args.start && args.end) {
                 url += `&start=${args.start}&end=${args.end}`;
               }
@@ -137,7 +137,7 @@ const OpenAIService = {
               // Executar chamada na API interna de leads
               const args = JSON.parse(toolCall.function.arguments);
               const fetch = require('node-fetch');
-              let url = `http://localhost:3000/api/leads/count?period=${args.period}`;
+              let url = `http://localhost:3002/api/leads/count?period=${args.period}`;
               if (args.period === 'range' && args.start && args.end) {
                 url += `&start=${args.start}&end=${args.end}`;
               }
