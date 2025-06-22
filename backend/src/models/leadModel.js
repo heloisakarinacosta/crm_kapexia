@@ -1,0 +1,24 @@
+const db = require('../config/db');
+
+const LeadModel = {
+  async getLeadsCountPorPeriodo({ period, start, end }) {
+    let query = '';
+    let params = [];
+    if (period === 'today') {
+      query = `SELECT COUNT(*) AS total FROM leads WHERE DATE(data_hora) = CURDATE()`;
+    } else if (period === 'week') {
+      query = `SELECT COUNT(*) AS total FROM leads WHERE YEARWEEK(data_hora, 1) = YEARWEEK(CURDATE(), 1)`;
+    } else if (period === 'month') {
+      query = `SELECT COUNT(*) AS total FROM leads WHERE YEAR(data_hora) = YEAR(CURDATE()) AND MONTH(data_hora) = MONTH(CURDATE())`;
+    } else if (period === 'range' && start && end) {
+      query = `SELECT COUNT(*) AS total FROM leads WHERE data_hora BETWEEN ? AND ?`;
+      params = [start + ' 00:00:00', end + ' 23:59:59'];
+    } else {
+      throw new Error('Parâmetros de período inválidos');
+    }
+    const [rows] = await db.query(query, params);
+    return rows[0];
+  }
+};
+
+module.exports = LeadModel; 

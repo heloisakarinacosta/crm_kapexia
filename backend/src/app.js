@@ -15,6 +15,8 @@ const analyticsRoutes = require('./routes/analyticsRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const openaiRoutes = require('./routes/openaiRoutes');
 const ragRoutes = require('./routes/ragRoutes');
+const contatoRoutes = require('./routes/contatoRoutes');
+const leadRoutes = require('./routes/leadRoutes');
 
 const app = express();
 
@@ -56,6 +58,8 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/openai', openaiRoutes);
 app.use('/api/rag', ragRoutes);
+app.use('/api/contatos', contatoRoutes);
+app.use('/api/leads', leadRoutes);
 
 // Rota de teste
 app.get('/api/health', (req, res) => {

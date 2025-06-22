@@ -101,61 +101,77 @@ const OpenAIService = {
       });
 
       // Executar assistant
-      const run = await openai.beta.threads.runs.create(thread.id, {
+      let run = await openai.beta.threads.runs.create(thread.id, {
         assistant_id: assistantId
       });
 
-      console.log('[DEBUG] Run criado:', { runId: run?.id, threadId: thread.id });
-
-      if (!run || !run.id) {
-        throw new Error('Falha ao criar run');
-      }
-
-      console.log('[DEBUG] Antes de retrieve:', { threadId: thread.id, runId: run.id, threadIdType: typeof thread.id, runIdType: typeof run.id });
-
-      // Aguardar conclusão com timeout
+      // Aguardar conclusão ou function_call
       let runStatus;
       let attempts = 0;
-      const maxAttempts = 60; // 60 seconds timeout
-      
+      const maxAttempts = 60;
+      let functionCallHandled = false;
       do {
-        try {
-          console.log('[DEBUG] Tentativa de retrieve:', attempts + 1);
-          const threadIdToUse = thread.id;
-          const runIdToUse = run.id;
-          console.log('[DEBUG] IDs para usar:', { threadIdToUse, runIdToUse });
-          
-          runStatus = await openai.beta.threads.runs.retrieve(threadIdToUse, runIdToUse);
-          console.log('[DEBUG] Status do run:', runStatus.status);
-          
-          if (runStatus.status === 'in_progress' || runStatus.status === 'queued') {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            attempts++;
+        runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
+        if (runStatus.status === 'requires_action' && runStatus.required_action && runStatus.required_action.type === 'submit_tool_outputs') {
+          // Function calling solicitado
+          const toolCalls = runStatus.required_action.submit_tool_outputs.tool_calls;
+          const toolOutputs = [];
+          for (const toolCall of toolCalls) {
+            if (toolCall.function.name === 'getConversasPorPeriodo') {
+              // Executar chamada na API interna
+              const args = JSON.parse(toolCall.function.arguments);
+              const fetch = require('node-fetch');
+              let url = `http://localhost:3000/api/contatos/conversas?period=${args.period}`;
+              if (args.period === 'range' && args.start && args.end) {
+                url += `&start=${args.start}&end=${args.end}`;
+              }
+              const apiRes = await fetch(url);
+              const data = await apiRes.json();
+              toolOutputs.push({
+                tool_call_id: toolCall.id,
+                output: JSON.stringify(data)
+              });
+            } else if (toolCall.function.name === 'getLeadsCountPorPeriodo') {
+              // Executar chamada na API interna de leads
+              const args = JSON.parse(toolCall.function.arguments);
+              const fetch = require('node-fetch');
+              let url = `http://localhost:3000/api/leads/count?period=${args.period}`;
+              if (args.period === 'range' && args.start && args.end) {
+                url += `&start=${args.start}&end=${args.end}`;
+              }
+              const apiRes = await fetch(url);
+              const data = await apiRes.json();
+              toolOutputs.push({
+                tool_call_id: toolCall.id,
+                output: JSON.stringify(data)
+              });
+            } else {
+              toolOutputs.push({
+                tool_call_id: toolCall.id,
+                output: JSON.stringify({ error: 'Função não implementada' })
+              });
+            }
           }
-        } catch (error) {
-          console.error('[DEBUG] Erro no retrieve:', error.message);
-          throw error;
+          // Enviar resultado da função para o assistant
+          run = await openai.beta.threads.runs.submitToolOutputs(thread.id, run.id, { tool_outputs: toolOutputs });
+          functionCallHandled = true;
+        } else if (runStatus.status === 'in_progress' || runStatus.status === 'queued') {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          attempts++;
         }
-      } while ((runStatus.status === 'in_progress' || runStatus.status === 'queued') && attempts < maxAttempts);
+      } while ((runStatus.status === 'in_progress' || runStatus.status === 'queued' || (runStatus.status === 'requires_action' && !functionCallHandled)) && attempts < maxAttempts);
 
       if (runStatus.status === 'completed') {
         // Obter mensagens do thread
         const messages = await openai.beta.threads.messages.list(thread.id);
         const lastMessage = messages.data[0];
-        
         let responseText = lastMessage.content[0].text.value;
-        
-        // Tentar fazer parse do JSON se a resposta parecer ser um JSON
         try {
           const jsonResponse = JSON.parse(responseText);
           if (jsonResponse.response) {
             responseText = jsonResponse.response;
           }
-        } catch (e) {
-          // Se não for JSON válido, usar a resposta como está
-          console.log('[DEBUG] Resposta não é JSON válido, usando como texto simples');
-        }
-
+        } catch (e) {}
         return {
           success: true,
           data: {
