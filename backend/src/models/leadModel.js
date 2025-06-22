@@ -5,13 +5,13 @@ const LeadModel = {
     let query = '';
     let params = [];
     if (period === 'today') {
-      query = `SELECT COUNT(*) AS total FROM leads WHERE DATE(data_hora) = CURDATE()`;
+      query = `SELECT COUNT(*) AS total FROM kapexia_whatsapp.leads WHERE DATE(data_hora) = CURDATE()`;
     } else if (period === 'week') {
-      query = `SELECT COUNT(*) AS total FROM leads WHERE YEARWEEK(data_hora, 1) = YEARWEEK(CURDATE(), 1)`;
+      query = `SELECT COUNT(*) AS total FROM kapexia_whatsapp.leads WHERE YEARWEEK(data_hora, 1) = YEARWEEK(CURDATE(), 1)`;
     } else if (period === 'month') {
-      query = `SELECT COUNT(*) AS total FROM leads WHERE YEAR(data_hora) = YEAR(CURDATE()) AND MONTH(data_hora) = MONTH(CURDATE())`;
+      query = `SELECT COUNT(*) AS total FROM kapexia_whatsapp.leads WHERE YEAR(data_hora) = YEAR(CURDATE()) AND MONTH(data_hora) = MONTH(CURDATE())`;
     } else if (period === 'range' && start && end) {
-      query = `SELECT COUNT(*) AS total FROM leads WHERE data_hora BETWEEN ? AND ?`;
+      query = `SELECT COUNT(*) AS total FROM kapexia_whatsapp.leads WHERE data_hora BETWEEN ? AND ?`;
       params = [start + ' 00:00:00', end + ' 23:59:59'];
     } else {
       throw new Error('Parâmetros de período inválidos');
