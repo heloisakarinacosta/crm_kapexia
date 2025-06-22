@@ -127,6 +127,7 @@ const OpenAIService = {
               }
               const apiRes = await fetch(url);
               const data = await apiRes.json();
+              console.log('[DEBUG] Resposta da API getConversasPorPeriodo:', data);
               toolOutputs.push({
                 tool_call_id: toolCall.id,
                 output: JSON.stringify(data)
@@ -141,6 +142,7 @@ const OpenAIService = {
               }
               const apiRes = await fetch(url);
               const data = await apiRes.json();
+              console.log('[DEBUG] Resposta da API getLeadsCountPorPeriodo:', data);
               toolOutputs.push({
                 tool_call_id: toolCall.id,
                 output: JSON.stringify(data)
