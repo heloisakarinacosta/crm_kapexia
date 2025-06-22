@@ -112,6 +112,7 @@ const OpenAIService = {
       let functionCallHandled = false;
       do {
         runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
+        console.log('[DEBUG] Status do run:', runStatus.status, runStatus.required_action);
         if (runStatus.status === 'requires_action' && runStatus.required_action && runStatus.required_action.type === 'submit_tool_outputs') {
           // Function calling solicitado
           const toolCalls = runStatus.required_action.submit_tool_outputs.tool_calls;

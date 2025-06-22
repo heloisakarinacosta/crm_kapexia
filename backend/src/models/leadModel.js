@@ -1,4 +1,4 @@
-const db = require('../config/db');
+const { pool } = require('../config/db');
 
 const LeadModel = {
   async getLeadsCountPorPeriodo({ period, start, end }) {
@@ -16,7 +16,7 @@ const LeadModel = {
     } else {
       throw new Error('Parâmetros de período inválidos');
     }
-    const [rows] = await db.query(query, params);
+    const [rows] = await pool.query(query, params);
     return rows[0];
   }
 };
