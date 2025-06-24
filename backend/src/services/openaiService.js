@@ -133,7 +133,7 @@ const OpenAIService = {
               console.log('[DEBUG] Resposta da API getConversasPorPeriodo:', data);
               toolOutputs.push({
                 tool_call_id: toolCall.id,
-                output: JSON.stringify(data)
+                output: JSON.stringify(data.results || data)
               });
             } else if (toolCall.function.name === 'getLeadsCountPorPeriodo') {
               // Executar chamada na API interna de leads
@@ -148,7 +148,7 @@ const OpenAIService = {
               console.log('[DEBUG] Resposta da API getLeadsCountPorPeriodo:', data);
               toolOutputs.push({
                 tool_call_id: toolCall.id,
-                output: JSON.stringify(data)
+                output: JSON.stringify(data.result || data)
               });
             } else {
               toolOutputs.push({
