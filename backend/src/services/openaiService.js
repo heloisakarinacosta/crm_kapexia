@@ -159,19 +159,19 @@ const OpenAIService = {
             }
           }
           console.log('[DEBUG] Enviando tool_outputs para o Assistant:', JSON.stringify(toolOutputs, null, 2));
-          // Novo formato conforme indicação da OpenAI
+          // Novo formato conforme orientação da OpenAI
           const tool_outputs_obj = {};
           toolOutputs.forEach(t => {
             tool_outputs_obj[t.tool_call_id] = t.output;
           });
-          const tool_resolutions = toolOutputs.map(t => ({
+          const tool_invocation_results = toolOutputs.map(t => ({
             tool_call_id: t.tool_call_id,
-            action: 'complete'
+            state: 'succeeded'
           }));
-          console.log('[DEBUG] Enviando tool_outputs para o Assistant (novo formato):', JSON.stringify({ tool_outputs: tool_outputs_obj, tool_resolutions }, null, 2));
+          console.log('[DEBUG] Enviando tool_outputs para o Assistant (novo formato):', JSON.stringify({ tool_outputs: tool_outputs_obj, tool_invocation_results }, null, 2));
           run = await openai.beta.threads.runs.submitToolOutputs(thread.id, run.id, {
             tool_outputs: tool_outputs_obj,
-            tool_resolutions
+            tool_invocation_results
           });
           functionCallHandled = true;
         } else if (runStatus.status === 'in_progress' || runStatus.status === 'queued') {
