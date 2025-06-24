@@ -228,7 +228,7 @@ const OpenAIService = {
         message: 'Erro ao comunicar com assistant: ' + error.message
       };
     }
-  }
+  },
 
   // Enviar mensagem para completion
   async sendToCompletion(apiKey, model, message, systemPrompt = null) {
