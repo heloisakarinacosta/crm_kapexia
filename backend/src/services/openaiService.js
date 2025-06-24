@@ -1,5 +1,7 @@
 const OpenAI = require('openai');
 
+const API_BASE_URL = process.env.API_BASE_URL || 'https://crm.kapexia.com.br';
+
 const OpenAIService = {
   // Listar assistants disponíveis
   async listAssistants(apiKey) {
@@ -122,7 +124,7 @@ const OpenAIService = {
               // Executar chamada na API interna
               const args = JSON.parse(toolCall.function.arguments);
               const fetch = require('node-fetch');
-              let url = `http://localhost:3002/api/contatos/conversas?period=${args.period}`;
+              let url = `${API_BASE_URL}/api/contatos/conversas?period=${args.period}`;
               if (args.period === 'range' && args.start && args.end) {
                 url += `&start=${args.start}&end=${args.end}`;
               }
@@ -137,7 +139,7 @@ const OpenAIService = {
               // Executar chamada na API interna de leads
               const args = JSON.parse(toolCall.function.arguments);
               const fetch = require('node-fetch');
-              let url = `http://localhost:3002/api/leads/count?period=${args.period}`;
+              let url = `${API_BASE_URL}/api/leads/count?period=${args.period}`;
               if (args.period === 'range' && args.start && args.end) {
                 url += `&start=${args.start}&end=${args.end}`;
               }
