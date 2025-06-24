@@ -72,9 +72,9 @@ const OpenAIService = {
   },
 
   // Enviar mensagem para assistant
-  async sendToAssistant(apiKey, assistantId, messages, threadId = null) {
+  async sendToAssistant(apiKey, assistantId, messages, threadId = null, additionalInstructions = null) {
     try {
-      console.log('[DEBUG] sendToAssistant:', { assistantId, message: messages, threadId, threadIdType: typeof threadId });
+      console.log('[DEBUG] sendToAssistant:', { assistantId, message: messages, threadId, threadIdType: typeof threadId, additionalInstructions });
       
       const openai = new OpenAI({
         apiKey: apiKey
@@ -103,9 +103,11 @@ const OpenAIService = {
       }
 
       // Executar assistant
-      let run = await openai.beta.threads.runs.create(thread.id, {
-        assistant_id: assistantId
-      });
+      let runParams = { assistant_id: assistantId };
+      if (additionalInstructions) {
+        runParams.additional_instructions = additionalInstructions;
+      }
+      let run = await openai.beta.threads.runs.create(thread.id, runParams);
 
       // Aguardar conclusão ou function_call
       let runStatus;
