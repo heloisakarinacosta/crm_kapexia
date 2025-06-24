@@ -159,6 +159,12 @@ const OpenAIService = {
             }
           }
           console.log('[DEBUG] Enviando tool_outputs para o Assistant:', JSON.stringify(toolOutputs, null, 2));
+          // Enviar resultado da função para o assistant no formato Make.com
+          const makeResults = toolOutputs.map(t => ({
+            toolCallId: t.tool_call_id,
+            result: t.output
+          }));
+          console.log('[DEBUG] Enviando results para o Assistant (padrão Make.com):', JSON.stringify({ results: makeResults }, null, 2));
           run = await openai.beta.threads.runs.submitToolOutputs(thread.id, run.id, { tool_outputs: toolOutputs });
           functionCallHandled = true;
         } else if (runStatus.status === 'in_progress' || runStatus.status === 'queued') {
