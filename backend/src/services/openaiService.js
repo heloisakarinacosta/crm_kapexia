@@ -146,9 +146,10 @@ const OpenAIService = {
               const apiRes = await fetch(url);
               const data = await apiRes.json();
               console.log('[DEBUG] Resposta da API getLeadsCountPorPeriodo:', data);
+              let output = (data && data.result) ? data.result : { total: 0 };
               toolOutputs.push({
                 tool_call_id: toolCall.id,
-                output: JSON.stringify(data.result || data)
+                output: JSON.stringify(output)
               });
             } else {
               toolOutputs.push({
