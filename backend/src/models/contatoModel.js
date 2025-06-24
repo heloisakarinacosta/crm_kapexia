@@ -11,6 +11,8 @@ const ContatoModel = {
     } else if (period === 'range' && start && end) {
       query = `SELECT nome, telefone, email, COUNT(*) AS quantidade FROM kapexia_whatsapp.contatos WHERE data_hora BETWEEN ? AND ? GROUP BY telefone`;
       params = [start + ' 00:00:00', end + ' 23:59:59'];
+    } else if (period === 'range') {
+      throw new Error('Para period=range, start e end são obrigatórios');
     } else {
       throw new Error('Parâmetros de período inválidos');
     }
