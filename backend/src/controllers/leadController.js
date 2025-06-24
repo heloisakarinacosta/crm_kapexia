@@ -17,6 +17,17 @@ const getLeadsCountPorPeriodo = async (req, res) => {
   }
 };
 
+const getLeadsPorPeriodo = async (req, res) => {
+  try {
+    const { period, start, end } = req.query;
+    const results = await LeadModel.getLeadsPorPeriodo({ period, start, end });
+    res.json({ context: 'leads_detalhados', period, start, end, results });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
 module.exports = {
-  getLeadsCountPorPeriodo
+  getLeadsCountPorPeriodo,
+  getLeadsPorPeriodo
 }; 

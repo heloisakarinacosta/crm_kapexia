@@ -157,6 +157,19 @@ const OpenAIService = {
                 tool_call_id: toolCall.id,
                 output: String(output) // Convertendo para string explicitamente
               });
+            } else if (toolCall.function.name === 'getLeadsPorPeriodo') {
+              const args = JSON.parse(toolCall.function.arguments);
+              const fetch = require('node-fetch');
+              let url = `${API_BASE_URL}/api/leads/list?period=${args.period}`;
+              if (args.period === 'range' && args.start && args.end) {
+                url += `&start=${args.start}&end=${args.end}`;
+              }
+              const apiRes = await fetch(url);
+              const data = await apiRes.json();
+              toolOutputs.push({
+                tool_call_id: toolCall.id,
+                output: JSON.stringify(data.results || data)
+              });
             } else {
               toolOutputs.push({
                 tool_call_id: toolCall.id,
