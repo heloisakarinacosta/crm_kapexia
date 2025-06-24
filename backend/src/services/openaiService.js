@@ -159,13 +159,20 @@ const OpenAIService = {
             }
           }
           console.log('[DEBUG] Enviando tool_outputs para o Assistant:', JSON.stringify(toolOutputs, null, 2));
-          // Enviar resultado da função para o assistant no formato Make.com
-          const makeResults = toolOutputs.map(t => ({
-            toolCallId: t.tool_call_id,
-            result: t.output
+          // Novo formato conforme indicação da OpenAI
+          const tool_outputs_obj = {};
+          toolOutputs.forEach(t => {
+            tool_outputs_obj[t.tool_call_id] = t.output;
+          });
+          const tool_resolutions = toolOutputs.map(t => ({
+            tool_call_id: t.tool_call_id,
+            action: 'complete'
           }));
-          console.log('[DEBUG] Enviando results para o Assistant (padrão Make.com):', JSON.stringify({ results: makeResults }, null, 2));
-          run = await openai.beta.threads.runs.submitToolOutputs(thread.id, run.id, { tool_outputs: toolOutputs });
+          console.log('[DEBUG] Enviando tool_outputs para o Assistant (novo formato):', JSON.stringify({ tool_outputs: tool_outputs_obj, tool_resolutions }, null, 2));
+          run = await openai.beta.threads.runs.submitToolOutputs(thread.id, run.id, {
+            tool_outputs: tool_outputs_obj,
+            tool_resolutions
+          });
           functionCallHandled = true;
         } else if (runStatus.status === 'in_progress' || runStatus.status === 'queued') {
           await new Promise(resolve => setTimeout(resolve, 1000));
