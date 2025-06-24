@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import ReactMarkdown from 'react-markdown';
+// import ReactMarkdown from 'react-markdown'; // Não é mais necessário
 
 interface ChatMessageProps {
   message: {
@@ -18,7 +18,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
   if (!isUser) {
     // Logar o conteúdo da mensagem do assistant para depuração
     // eslint-disable-next-line no-console
-    console.log('[DEBUG Markdown] Conteúdo da resposta do assistant:', message.content);
+    console.log('[DEBUG HTML] Conteúdo da resposta do assistant:', message.content);
   }
   
   return (
@@ -33,7 +33,10 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
         {isUser ? (
           <p>{message.content}</p>
         ) : (
-          <ReactMarkdown className="markdown">{message.content as string}</ReactMarkdown>
+          <div
+            className="markdown"
+            dangerouslySetInnerHTML={{ __html: message.content }}
+          />
         )}
         <div className={`text-xs mt-1 ${isUser ? 'text-blue-200' : 'text-gray-400'}`}>
           {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
