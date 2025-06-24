@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
 
 interface ChatMessageProps {
   message: {
@@ -23,7 +24,11 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
             : 'bg-gray-800 text-white'
         }`}
       >
-        <p>{message.content}</p>
+        {isUser ? (
+          <p>{message.content}</p>
+        ) : (
+          <ReactMarkdown>{message.content as string}</ReactMarkdown>
+        )}
         <div className={`text-xs mt-1 ${isUser ? 'text-blue-200' : 'text-gray-400'}`}>
           {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </div>
