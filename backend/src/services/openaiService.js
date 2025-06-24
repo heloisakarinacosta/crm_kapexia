@@ -72,9 +72,9 @@ const OpenAIService = {
   },
 
   // Enviar mensagem para assistant
-  async sendToAssistant(apiKey, assistantId, message, threadId = null) {
+  async sendToAssistant(apiKey, assistantId, messages, threadId = null) {
     try {
-      console.log('[DEBUG] sendToAssistant:', { assistantId, message, threadId, threadIdType: typeof threadId });
+      console.log('[DEBUG] sendToAssistant:', { assistantId, message: messages, threadId, threadIdType: typeof threadId });
       
       const openai = new OpenAI({
         apiKey: apiKey
@@ -96,11 +96,11 @@ const OpenAIService = {
         throw new Error('Falha ao criar ou recuperar thread');
       }
 
-      // Adicionar mensagem ao thread
-      await openai.beta.threads.messages.create(thread.id, {
-        role: 'user',
-        content: message
-      });
+      // Adicionar todas as mensagens ao thread
+      for (const msg of messages) {
+        console.log('[DEBUG] Enviando mensagem para o thread:', JSON.stringify(msg, null, 2));
+        await openai.beta.threads.messages.create(thread.id, msg);
+      }
 
       // Executar assistant
       let run = await openai.beta.threads.runs.create(thread.id, {
