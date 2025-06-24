@@ -269,12 +269,19 @@ const OpenAIController = {
 
       let result;
 
+      // Adicionar contexto de data/hora atual
+      const dataHoraAtual = new Date().toISOString();
+      const systemContext = {
+        role: 'system',
+        content: `A data e hora atual do sistema é: ${dataHoraAtual}. Use esta data como referência para cálculos de períodos relativos.`
+      };
+
       // Usar assistant se configurado, senão usar completion
       if (config.assistant_id) {
         result = await OpenAIService.sendToAssistant(
           config.api_key,
           config.assistant_id,
-          message,
+          [systemContext, { role: 'user', content: message }], // Passa o contexto e a mensagem do usuário
           threadId
         );
       } else {
