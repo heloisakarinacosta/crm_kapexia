@@ -158,7 +158,7 @@ const OpenAIService = {
               });
             }
           }
-          // Enviar resultado da função para o assistant
+          console.log('[DEBUG] Enviando tool_outputs para o Assistant:', JSON.stringify(toolOutputs, null, 2));
           run = await openai.beta.threads.runs.submitToolOutputs(thread.id, run.id, { tool_outputs: toolOutputs });
           functionCallHandled = true;
         } else if (runStatus.status === 'in_progress' || runStatus.status === 'queued') {
