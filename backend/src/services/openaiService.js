@@ -111,15 +111,21 @@ const OpenAIService = {
       let runStatus;
       let attempts = 0;
       const maxAttempts = 60;
-      let functionCallHandled = false;
+      
       do {
         runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
-        console.log('[DEBUG] Status do run:', runStatus.status, runStatus.required_action);
+        console.log('[DEBUG] Status do run:', runStatus.status);
+        
         if (runStatus.status === 'requires_action' && runStatus.required_action && runStatus.required_action.type === 'submit_tool_outputs') {
+          console.log('[DEBUG] Function calling solicitado');
+          
           // Function calling solicitado
           const toolCalls = runStatus.required_action.submit_tool_outputs.tool_calls;
           const toolOutputs = [];
+          
           for (const toolCall of toolCalls) {
+            console.log('[DEBUG] Processando tool call:', toolCall.function.name);
+            
             if (toolCall.function.name === 'getConversasPorPeriodo') {
               // Executar chamada na API interna
               const args = JSON.parse(toolCall.function.arguments);
@@ -149,7 +155,7 @@ const OpenAIService = {
               let output = (data && data.result && typeof data.result.total === 'number') ? data.result.total : 0;
               toolOutputs.push({
                 tool_call_id: toolCall.id,
-                output: JSON.stringify(output)
+                output: String(output) // Convertendo para string explicitamente
               });
             } else {
               toolOutputs.push({
@@ -158,34 +164,49 @@ const OpenAIService = {
               });
             }
           }
+          
           console.log('[DEBUG] Enviando tool_outputs para o Assistant:', JSON.stringify(toolOutputs, null, 2));
-          // Formato oficial da OpenAI Assistants API: apenas tool_outputs (array)
-          const tool_outputs_arr = toolOutputs.map(t => ({
-            tool_call_id: t.tool_call_id,
-            output: t.output
-          }));
-          console.log('[DEBUG] Enviando tool_outputs para o Assistant (formato oficial):', JSON.stringify({ tool_outputs: tool_outputs_arr }, null, 2));
+          
+          // Enviar tool outputs
           run = await openai.beta.threads.runs.submitToolOutputs(thread.id, run.id, {
-            tool_outputs: tool_outputs_arr
+            tool_outputs: toolOutputs
           });
-          functionCallHandled = true;
+          
+          console.log('[DEBUG] Tool outputs enviados, novo status:', run.status);
+          
+          // NÃO sair do loop aqui - continuar verificando o status
+          
         } else if (runStatus.status === 'in_progress' || runStatus.status === 'queued') {
+          console.log('[DEBUG] Aguardando... Status:', runStatus.status);
           await new Promise(resolve => setTimeout(resolve, 1000));
           attempts++;
+        } else if (runStatus.status === 'failed') {
+          console.error('[DEBUG] Run falhou:', runStatus.last_error);
+          throw new Error(`Run falhou: ${runStatus.last_error?.message || 'Erro desconhecido'}`);
         }
-      } while ((runStatus.status === 'in_progress' || runStatus.status === 'queued' || (runStatus.status === 'requires_action' && !functionCallHandled)) && attempts < maxAttempts);
+        
+      } while (
+        (runStatus.status === 'in_progress' || 
+        runStatus.status === 'queued' || 
+        runStatus.status === 'requires_action') && 
+        attempts < maxAttempts
+      );
 
       if (runStatus.status === 'completed') {
         // Obter mensagens do thread
         const messages = await openai.beta.threads.messages.list(thread.id);
         const lastMessage = messages.data[0];
         let responseText = lastMessage.content[0].text.value;
+        
         try {
           const jsonResponse = JSON.parse(responseText);
           if (jsonResponse.response) {
             responseText = jsonResponse.response;
           }
-        } catch (e) {}
+        } catch (e) {
+          // Se não for JSON, manter o texto original
+        }
+        
         return {
           success: true,
           data: {
@@ -194,6 +215,7 @@ const OpenAIService = {
           }
         };
       } else {
+        console.error('[DEBUG] Run não completou. Status final:', runStatus.status);
         return {
           success: false,
           message: 'Erro na execução do assistant: ' + runStatus.status
@@ -206,7 +228,7 @@ const OpenAIService = {
         message: 'Erro ao comunicar com assistant: ' + error.message
       };
     }
-  },
+  }
 
   // Enviar mensagem para completion
   async sendToCompletion(apiKey, model, message, systemPrompt = null) {
