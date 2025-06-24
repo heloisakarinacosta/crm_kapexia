@@ -273,15 +273,30 @@ const OpenAIController = {
       const dataHoraAtual = new Date().toISOString();
       const systemContext = {
         role: 'system',
-        content: `A data e hora atual do sistema é: ${dataHoraAtual}. Use esta data como referência para cálculos de períodos relativos.`
+        content: [
+          {
+            type: 'text',
+            text: `A data e hora atual do sistema é: ${dataHoraAtual}. Use esta data como referência para cálculos de períodos relativos.`
+          }
+        ]
       };
+      const userMessageObj = {
+        role: 'user',
+        content: [
+          {
+            type: 'text',
+            text: message
+          }
+        ]
+      };
+      const messages = [systemContext, userMessageObj];
 
       // Usar assistant se configurado, senão usar completion
       if (config.assistant_id) {
         result = await OpenAIService.sendToAssistant(
           config.api_key,
           config.assistant_id,
-          [systemContext, { role: 'user', content: message }], // Passa o contexto e a mensagem do usuário
+          messages, // Passa o contexto e a mensagem do usuário
           threadId
         );
       } else {
